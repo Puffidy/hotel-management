@@ -1,7 +1,7 @@
 # Sustav_Za_Upravljanje_Hotelom
 Sustav za upravljanje hotelom
 
-Rokovi : Rokovi: 14.12 17 tablica, 20.12 17 upita + smisleni zapisi, 7-10.1  poglede(5), procedure(10),  okidače, transakcije., 16.1 web sučelje,  18.1 dokumenatacija
+Rokovi :  17 tablica + smisleni zapisi ->> okidači ->> procedure(10) ->> transakcije ->>  pogledi(5), procedure(10) ->> web sučelje ->>  dokumenatacija
 
 Sljedeći sastank: 20.12 ili 21.12  Tema Sastanka: Provjera zapisa i Contstraits-a + okidači i procedure
 
