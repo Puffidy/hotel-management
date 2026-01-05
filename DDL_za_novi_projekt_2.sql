@@ -10,7 +10,7 @@ USE novi_projekt;
 CREATE TABLE drzava (
     id INT AUTO_INCREMENT PRIMARY KEY,
     naziv VARCHAR(80) NOT NULL,
-    iso_kod CHAR(3) UNIQUE
+    iso_kod CHAR(3) NOT NULL UNIQUE
 );
 
 -- 2. GRAD
@@ -24,7 +24,7 @@ CREATE TABLE grad (
 -- 3. VRSTA_DOKUMENTA
 CREATE TABLE vrsta_dokumenta (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    naziv VARCHAR(50) NOT NULL
+    naziv VARCHAR(50) NOT NULL UNIQUE
 );
 
 /*
@@ -80,7 +80,7 @@ CREATE TABLE gost (
 -- 7. TIP_SOBA
 CREATE TABLE tip_sobe (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    naziv VARCHAR(50) NOT NULL,
+    naziv VARCHAR(50) NOT NULL UNIQUE,
     opis TEXT,
     standardni_kapacitet INT NOT NULL
 );
@@ -88,9 +88,8 @@ CREATE TABLE tip_sobe (
 -- 8. SOBA
 CREATE TABLE soba (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    broj INT NOT NULL,
+    broj INT NOT NULL UNIQUE,
     tip_sobe_id INT NOT NULL,
-    kapacitet_osoba INT NOT NULL,
     kat INT NOT NULL,
     minibar BOOLEAN NOT NULL DEFAULT 0,
     balkon BOOLEAN NOT NULL DEFAULT 0,
@@ -118,7 +117,7 @@ CREATE TABLE cjenik_soba (
 -- 10. KATEGORIJA_USLUGE (Hrana, Piće, Wellness...)
 CREATE TABLE kategorija_usluge (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    naziv VARCHAR(50) NOT NULL
+    naziv VARCHAR(50) NOT NULL UNIQUE
 );
 
 -- 11. USLUGA 
@@ -135,7 +134,7 @@ CREATE TABLE usluga (
 -- 12. ARTIKL
 CREATE TABLE artikl (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    naziv VARCHAR(50) NOT NULL,
+    naziv VARCHAR(50) NOT NULL UNIQUE,
     stanje_zaliha DECIMAL(10,2) DEFAULT 0,
     jedinica_mjere VARCHAR(10), 
     nabavna_cijena DECIMAL(10,2)
@@ -154,7 +153,7 @@ CREATE TABLE normativ (
 -- 14. RESTORAN_STOL 
 CREATE TABLE restoran_stol (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    broj_stola INT NOT NULL,
+    broj_stola INT NOT NULL UNIQUE,
     broj_mjesta INT NOT NULL,
     lokacija VARCHAR(50)
 );
@@ -172,6 +171,8 @@ CREATE TABLE promocija (
     datum_pocetka DATE,
     datum_zavrsetka DATE,
     aktivna BOOLEAN DEFAULT 1
+    CONSTRAINT provjeri_popust
+      CHECK (popust_postotak IS NULL OR (popust_postotak >= 0 AND popust_postotak <= 100))
 );
 
 -- 16. REZERVACIJA 
@@ -284,7 +285,7 @@ CREATE TABLE stavka_racuna (
 -- 7. ODRŽAVANJE I FEEDBACK
 */
 
--- 23. CISCENJE_DNEVNI_NALOG
+-- 23. CISCENJE_DNEVNI_NALOGx
 CREATE TABLE ciscenje_dnevni_nalog (
     id INT AUTO_INCREMENT PRIMARY KEY,
     zaposlenik_id INT NOT NULL, 
@@ -319,3 +320,4 @@ CREATE TABLE recenzija (
     datum_recenzije TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_recenzija_rez FOREIGN KEY (rezervacija_id) REFERENCES rezervacija(id)
 );
+
