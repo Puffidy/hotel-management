@@ -6,8 +6,37 @@ USE novi_projekt;
 
 -- 1. DRZAVA
 INSERT INTO drzava (id, naziv, iso_kod) VALUES
-(1,'Hrvatska','HR'), (2,'Bosna i Hercegovina','BIH'), (3,'Srbija','RS'),
-(4,'Italija','IT'), (5,'Njemacka','DE'), (6,'Ujedinjeno Kraljevstvo','UK'), (7,'Slovenija','SL');
+(1,'Hrvatska','HRV'),
+(2,'Bosna i Hercegovina','BIH'),
+(3,'Srbija','SRB'),
+(4,'Italija','ITA'),
+(5,'Njemacka','DEU'),
+(6,'Ujedinjeno Kraljevstvo','GBR'),
+(7,'Slovenija','SVN'),
+(8,'Austrija','AUT'),
+(9,'Madjarska','HUN'),
+(10,'Crna Gora','MNE'),
+(11,'Sjeverna Makedonija','MKD'),
+(12,'Albanija','ALB'),
+(13,'Grcka','GRC'),
+(14,'Francuska','FRA'),
+(15,'Spanjolska','ESP'),
+(16,'Portugal','PRT'),
+(17,'Nizozemska','NLD'),
+(18,'Belgija','BEL'),
+(19,'Svicarska','CHE'),
+(20,'Svedska','SWE'),
+(21,'Norveska','NOR'),
+(22,'Danska','DNK'),
+(23,'Finska','FIN'),
+(24,'Irska','IRL'),
+(25,'Poljska','POL'),
+(26,'Ceska','CZE'),
+(27,'Slovacka','SVK'),
+(28,'Rumunjska','ROU'),
+(29,'Bugarska','BGR'),
+(30,'Turska','TUR');
+
 
 -- 2. GRAD
 INSERT INTO grad (id, naziv, drzava_id) VALUES
