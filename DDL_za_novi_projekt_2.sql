@@ -8,7 +8,7 @@ USE novi_projekt;
 
 -- 1. DRZAVA
 CREATE TABLE drzava (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT PRIMARY KEY,
     naziv VARCHAR(80) NOT NULL,
     iso_kod CHAR(3) NOT NULL UNIQUE
 );
@@ -33,7 +33,7 @@ CREATE TABLE vrsta_dokumenta (
 
 -- 4. ODJEL
 CREATE TABLE odjel (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT PRIMARY KEY,
     naziv VARCHAR(50) NOT NULL,
     tel_kontakt VARCHAR(20),
     lokalni INT
@@ -41,7 +41,7 @@ CREATE TABLE odjel (
 
 -- 5. ZAPOSLENIK
 CREATE TABLE zaposlenik (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT PRIMARY KEY,
     odjel_id INT NOT NULL,
     ime VARCHAR(50) NOT NULL,
     prezime VARCHAR(50) NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE zaposlenik (
 
 -- 6. GOST
 CREATE TABLE gost (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT PRIMARY KEY,
     ime VARCHAR(50) NOT NULL,
     prezime VARCHAR(50) NOT NULL,
     vrsta_dokumenta_id INT NOT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE gost (
 
 -- 7. TIP_SOBA
 CREATE TABLE tip_sobe (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT PRIMARY KEY,
     naziv VARCHAR(50) NOT NULL UNIQUE,
     opis TEXT,
     standardni_kapacitet INT NOT NULL
@@ -87,7 +87,7 @@ CREATE TABLE tip_sobe (
 
 -- 8. SOBA
 CREATE TABLE soba (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT PRIMARY KEY,
     broj INT NOT NULL UNIQUE,
     tip_sobe_id INT NOT NULL,
     kat INT NOT NULL,
@@ -116,13 +116,13 @@ CREATE TABLE cjenik_soba (
 
 -- 10. KATEGORIJA_USLUGE (Hrana, Piće, Wellness...)
 CREATE TABLE kategorija_usluge (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT  PRIMARY KEY,
     naziv VARCHAR(50) NOT NULL UNIQUE
 );
 
 -- 11. USLUGA 
 CREATE TABLE usluga (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT  PRIMARY KEY,
     kategorija_id INT NULL, -- Link na kategoriju
     naziv VARCHAR(50) NOT NULL,
     opis TEXT,
@@ -133,7 +133,7 @@ CREATE TABLE usluga (
 
 -- 12. ARTIKL
 CREATE TABLE artikl (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT  PRIMARY KEY,
     naziv VARCHAR(50) NOT NULL UNIQUE,
     stanje_zaliha DECIMAL(10,2) DEFAULT 0,
     jedinica_mjere VARCHAR(10), 
