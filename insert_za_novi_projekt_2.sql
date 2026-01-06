@@ -5,44 +5,103 @@ USE novi_projekt;
 */
 
 -- 1. DRZAVA
-INSERT INTO drzava (id, naziv, iso_kod) VALUES
-(1,'Hrvatska','HRV'),
-(2,'Bosna i Hercegovina','BIH'),
-(3,'Srbija','SRB'),
-(4,'Italija','ITA'),
-(5,'Njemacka','DEU'),
-(6,'Ujedinjeno Kraljevstvo','GBR'),
-(7,'Slovenija','SVN'),
-(8,'Austrija','AUT'),
-(9,'Madjarska','HUN'),
-(10,'Crna Gora','MNE'),
-(11,'Sjeverna Makedonija','MKD'),
-(12,'Albanija','ALB'),
-(13,'Grcka','GRC'),
-(14,'Francuska','FRA'),
-(15,'Spanjolska','ESP'),
-(16,'Portugal','PRT'),
-(17,'Nizozemska','NLD'),
-(18,'Belgija','BEL'),
-(19,'Svicarska','CHE'),
-(20,'Svedska','SWE'),
-(21,'Norveska','NOR'),
-(22,'Danska','DNK'),
-(23,'Finska','FIN'),
-(24,'Irska','IRL'),
-(25,'Poljska','POL'),
-(26,'Ceska','CZE'),
-(27,'Slovacka','SVK'),
-(28,'Rumunjska','ROU'),
-(29,'Bugarska','BGR'),
-(30,'Turska','TUR');
+INSERT INTO drzava (naziv, iso_kod) VALUES
+('Hrvatska','HRV'),
+('Bosna i Hercegovina','BIH'),
+('Srbija','SRB'),
+('Italija','ITA'),
+('Njemacka','DEU'),
+('Ujedinjeno Kraljevstvo','GBR'),
+('Slovenija','SVN'),
+('Austrija','AUT'),
+('Madjarska','HUN'),
+('Crna Gora','MNE'),
+('Sjeverna Makedonija','MKD'),
+('Albanija','ALB'),
+('Grcka','GRC'),
+('Francuska','FRA'),
+('Spanjolska','ESP'),
+('Portugal','PRT'),
+('Nizozemska','NLD'),
+('Belgija','BEL'),
+('Svicarska','CHE'),
+('Svedska','SWE'),
+('Norveska','NOR'),
+('Danska','DNK'),
+('Finska','FIN'),
+('Irska','IRL'),
+('Poljska','POL'),
+('Ceska','CZE'),
+('Slovacka','SVK'),
+('Rumunjska','ROU'),
+('Bugarska','BGR'),
+('Turska','TUR');
+
 
 
 -- 2. GRAD
-INSERT INTO grad (id, naziv, drzava_id) VALUES
-(1,'Zagreb',1), (2,'Pula',1), (3,'Split',1), (4,'Rijeka',1), (5,'Dubrovnik',1),
-(6,'Sarajevo',2), (7,'Mostar',2), (8,'Beograd',3), (9,'Novi Sad',3),
-(10,'Rim',4), (11,'London',6), (12,'Ljubljana',7), (13,'Berlin',5);
+INSERT INTO grad (naziv, drzava_id) VALUES
+-- 1 Hrvatska
+('Zagreb',1),('Split',1),
+-- 2 Bosna i Hercegovina
+('Sarajevo',2),('Mostar',2),
+-- 3 Srbija
+('Beograd',3),('Novi Sad',3),
+-- 4 Italija
+('Rim',4),('Milano',4),
+-- 5 Njemacka
+('Berlin',5),('Muenchen',5),
+-- 6 Ujedinjeno Kraljevstvo
+('London',6),('Manchester',6),
+-- 7 Slovenija
+('Ljubljana',7),('Maribor',7),
+-- 8 Austrija
+('Bec',8),('Salzburg',8),
+-- 9 Madjarska
+('Budimpesta',9),('Debrecen',9),
+-- 10 Crna Gora
+('Podgorica',10),('Budva',10),
+-- 11 Sjeverna Makedonija
+('Skopje',11),('Ohrid',11),
+-- 12 Albanija
+('Tirana',12),('Drac',12),
+-- 13 Grcka
+('Atena',13),('Solun',13),
+-- 14 Francuska
+('Pariz',14),('Lyon',14),
+-- 15 Spanjolska
+('Madrid',15),('Barcelona',15),
+-- 16 Portugal
+('Lisabon',16),('Porto',16),
+-- 17 Nizozemska
+('Amsterdam',17),('Rotterdam',17),
+-- 18 Belgija
+('Bruxelles',18),('Antwerpen',18),
+-- 19 Svicarska
+('Zurich',19),('Geneva',19),
+-- 20 Svedska
+('Stockholm',20),('Goteborg',20),
+-- 21 Norveska
+('Oslo',21),('Bergen',21),
+-- 22 Danska
+('Kopenhagen',22),('Aarhus',22),
+-- 23 Finska
+('Helsinki',23),('Tampere',23),
+-- 24 Irska
+('Dublin',24),('Cork',24),
+-- 25 Poljska
+('Varsava',25),('Krakow',25),
+-- 26 Ceska
+('Prag',26),('Brno',26),
+-- 27 Slovacka
+('Bratislava',27),('Kosice',27),
+-- 28 Rumunjska
+('Bukurest',28),('Cluj-Napoca',28),
+-- 29 Bugarska
+('Sofija',29),('Plovdiv',29),
+-- 30 Turska
+('Ankara',30),('Istanbul',30);
+
 
 -- 3. VRSTA_DOKUMENTA
 INSERT INTO vrsta_dokumenta (id, naziv) VALUES
