@@ -397,7 +397,7 @@ INSERT INTO kategorija_usluge (id, naziv) VALUES
 -- 11. USLUGA 
 INSERT INTO usluga (id, kategorija_id, naziv, opis, jedinica_mjere, cijena_trenutna) VALUES
 -- Hrana
-(1, 1,'Dorucak','Svedski stol','kom',10.00),
+(1, 1,'Dorucak','Skromni dorucak','kom',10.00),
 (2, 1,'Polupansion','Dorucak i vecera','dan',25.00),
 (3, 1,'Pansion','Dorucak, rucak i vecera','dan',40.00),
 (4, 1,'Rucak','Dnevni meni','kom',14.00),
