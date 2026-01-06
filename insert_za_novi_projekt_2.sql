@@ -5,37 +5,37 @@ USE novi_projekt;
 */
 
 -- 1. DRZAVA
-INSERT INTO drzava (naziv, iso_kod) VALUES
-('Hrvatska','HRV'),
-('Bosna i Hercegovina','BIH'),
-('Srbija','SRB'),
-('Italija','ITA'),
-('Njemacka','DEU'),
-('Ujedinjeno Kraljevstvo','GBR'),
-('Slovenija','SVN'),
-('Austrija','AUT'),
-('Madjarska','HUN'),
-('Crna Gora','MNE'),
-('Sjeverna Makedonija','MKD'),
-('Albanija','ALB'),
-('Grcka','GRC'),
-('Francuska','FRA'),
-('Spanjolska','ESP'),
-('Portugal','PRT'),
-('Nizozemska','NLD'),
-('Belgija','BEL'),
-('Svicarska','CHE'),
-('Svedska','SWE'),
-('Norveska','NOR'),
-('Danska','DNK'),
-('Finska','FIN'),
-('Irska','IRL'),
-('Poljska','POL'),
-('Ceska','CZE'),
-('Slovacka','SVK'),
-('Rumunjska','ROU'),
-('Bugarska','BGR'),
-('Turska','TUR');
+INSERT INTO drzava (id, naziv, iso_kod) VALUES
+(1,'Hrvatska','HRV'),
+(2,'Bosna i Hercegovina','BIH'),
+(3,'Srbija','SRB'),
+(4,'Italija','ITA'),
+(5,'Njemacka','DEU'),
+(6,'Ujedinjeno Kraljevstvo','GBR'),
+(7,'Slovenija','SVN'),
+(8,'Austrija','AUT'),
+(9,'Madjarska','HUN'),
+(10,'Crna Gora','MNE'),
+(11,'Sjeverna Makedonija','MKD'),
+(12,'Albanija','ALB'),
+(13,'Grcka','GRC'),
+(14,'Francuska','FRA'),
+(15,'Spanjolska','ESP'),
+(16,'Portugal','PRT'),
+(17,'Nizozemska','NLD'),
+(18,'Belgija','BEL'),
+(19,'Svicarska','CHE'),
+(20,'Svedska','SWE'),
+(21,'Norveska','NOR'),
+(22,'Danska','DNK'),
+(23,'Finska','FIN'),
+(24,'Irska','IRL'),
+(25,'Poljska','POL'),
+(26,'Ceska','CZE'),
+(27,'Slovacka','SVK'),
+(28,'Rumunjska','ROU'),
+(29,'Bugarska','BGR'),
+(30,'Turska','TUR');
 
 
 
@@ -114,61 +114,115 @@ INSERT INTO vrsta_dokumenta (naziv) VALUES
 */
 
 -- 4. ODJEL
-INSERT INTO odjel (naziv, tel_kontakt, lokalni) VALUES
-('Recepcija','010/100-100',100),
-('Domaćinstvo','010/100-200',200),
-('Održavanje','010/100-300',300),
-('Uprava','010/100-400',400),
-('Restoran i Bar','010/100-500',500); -- NOVI ODJEL
+INSERT INTO odjel (id, naziv, tel_kontakt, lokalni) VALUES
+(1,'Recepcija','010/100-100',100),
+(2,'Domacinstvo','010/100-200',200),
+(3,'Odrzavanje','010/100-300',300),
+(4,'Uprava','010/100-400',400),
+(5,'Restoran i Bar','010/100-500',500);
+
 
 -- 5. ZAPOSLENIK
-INSERT INTO zaposlenik (id, odjel_id, ime, prezime, tel_kontakt, pozicija, je_voditelj_odjela, korisnicko_ime, lozinka_hash) VALUES
-(1,1,'Iva','Ivic','099111111','Recepcioner',0, 'iva.ivic', 'pass123'),
-(2,1,'Luka','Lukic','099222222','Voditelj recepcije',1, 'luka.lukic', 'admin123'),
-(3,2,'Marija','Maricic','099333333','Spremacica',0, 'marija.m', 'pass123'),
-(4,2,'Nina','Ninic','099333444','Spremacica',0, 'nina.n', 'pass123'),
-(5,3,'Tomo','Tomic','099444444','Serviser',0, 'tomo.t', 'pass123'),
-(6,3,'Mario','Marincic','099555555','Voditelj odrzavanja',1, 'mario.m', 'pass123'),
-(7,4,'Ivana','Ivancic','099666666','Direktor',1, 'ivana.i', 'admin123'),
-(8,4,'Petra','Petric','099777777','Racunovodstvo',0, 'petra.p', 'pass123'),
-(9,5,'Marko','Markovic','099888888','Konobar',0, 'marko.m', 'pass123'), 
-(10,5,'Ana','Anic','099999999','Sef kuhinje',1, 'ana.a', 'pass123'); 
+INSERT INTO zaposlenik
+(id, odjel_id, ime, prezime, tel_kontakt, pozicija, je_voditelj_odjela, korisnicko_ime, lozinka_hash)
+VALUES
+-- 1 Recepcija
+(1,1,'Iva','Ivic','099111111','Recepcioner',0,'iva.ivic','pass123'),
+(2,1,'Luka','Lukic','099222222','Voditelj recepcije',1,'luka.lukic','admin123'),
+(3,1,'Maja','Majic','099101010','Recepcioner',0,'maja.majic','pass123'),
+(4,1,'Ivan','Ilic','099101011','Recepcioner',0,'ivan.ilic','pass123'),
+(5,1,'Tea','Teic','099101012','Nocni recepcioner',0,'tea.teic','pass123'),
+(6,1,'Nikola','Ninic','099101013','Agent rezervacija',0,'nikola.ninic','pass123'),
+
+-- 2 Domacinstvo
+(7,2,'Marija','Maricic','099333333','Sobarica',0,'marija.maricic','pass123'),
+(8,2,'Nina','Ninic','099333444','Sobarica',0,'nina.ninic','pass123'),
+(9,2,'Katarina','Katic','099202020','Sobarica',0,'katarina.katic','pass123'),
+(10,2,'Ivana','Ivanic','099202021','Sobarica',0,'ivana.ivanic','pass123'),
+(11,2,'Sandra','Sandric','099202022','Nadzornica domacinstva',1,'sandra.sandric','pass123'),
+(12,2,'Dora','Doric','099202023','Pranje i peglaonica',0,'dora.doric','pass123'),
+
+-- 3 Odrzavanje
+(13,3,'Tomo','Tomic','099444444','Serviser',0,'tomo.tomic','pass123'),
+(14,3,'Mario','Marincic','099555555','Voditelj odrzavanja',1,'mario.marincic','pass123'),
+(15,3,'Stjepan','Stipic','099303030','Tehnicar',0,'stjepan.stipic','pass123'),
+(16,3,'Ante','Antic','099303031','Elektricar',0,'ante.antic','pass123'),
+(17,3,'Josip','Jovic','099303032','Vodoinstalater',0,'josip.jovic','pass123'),
+(18,3,'Filip','Filipovic','099303033','Tehnicar klimatizacije',0,'filip.filipovic','pass123'),
+
+-- 4 Uprava
+(19,4,'Ivana','Ivancic','099666666','Direktor',1,'ivana.ivancic','admin123'),
+(20,4,'Petra','Petric','099777777','Racunovodstvo',0,'petra.petric','pass123'),
+(21,4,'Marko','Maric','099404040','Voditelj financija',0,'marko.maric','pass123'),
+(22,4,'Lucija','Lucic','099404041','Administracija',0,'lucija.lucic','pass123'),
+(23,4,'Ena','Enic','099404042','HR referent',0,'ena.enic','pass123'),
+(24,4,'Bruno','Brunic','099404043','Kontroling',0,'bruno.brunic','pass123'),
+
+-- 5 Restoran i Bar
+(25,5,'Marko','Markovic','099888888','Konobar',0,'marko.markovic','pass123'),
+(26,5,'Ana','Anic','099999999','Sef kuhinje',1,'ana.anic','pass123'),
+(27,5,'Karlo','Karlic','099505050','Konobar',0,'karlo.karlic','pass123'),
+(28,5,'Lana','Lanic','099505051','Konobar',0,'lana.lanic','pass123'),
+(29,5,'Mia','Miic','099505052','Barmen',0,'mia.miic','pass123'),
+(30,5,'Dario','Darik','099505053','Pomocni kuhar',0,'dario.darik','pass123');
+;
+
 
 -- 6. GOST
-INSERT INTO gost (id, ime, prezime, vrsta_dokumenta_id, broj_dokumenta, prebivaliste_drzava_id, prebivaliste_grad_id, prebivaliste_adresa, datum_rodjenja, drzavljanstvo, vip_status) VALUES
-(1,'Ana','Anic',1,'AA12345',1,1,'Ilica 12','1990-02-15','HR', 1), 
-(2,'Ivica','Ivicic',2,'BB22345',1,2,'Put Mora 5','1988-07-21','HR', 0),
-(3,'Marko','Maric',1,'MM44556',1,3,'Kvarnerska 7','1995-01-01','HR', 0),
-(4,'Darko','Daric',2,'DD99887',2,5,'Ulica 1','1989-03-12','BIH', 0),
-(5,'Ena','Enic',1,'EE23232',3,7,'Nemanjina 10','1992-09-10','RS', 1), 
-(6,'Filip','Filipic',1,'FF11111',1,1,'Ilica 88','1993-05-19','HR', 0),
-(7,'Goran','Goric',2,'GG22222',1,2,'Primorska 6','1985-10-10','HR', 0),
-(8,'Helena','Helnic',1,'HH33333',1,3,'Trg Europe 2',NULL,'HR', 0),
-(9,'Ivan','Ivanovic',1,'II44444',2,6,'Aleja 9','1987-08-08','BIH', 0),
-(10,'Jasna','Jasincic',2,'JJ55555',3,8,'Centar bb','1991-09-09','RS', 0),
-(11,'Karlo','Karlic',1,'KK66666',1,1,'Maksimirska 55','1996-04-04','HR', 0),
-(12,'Lana','Lanic',2,'LL77777',1,4,'Obala 18','1984-12-12','HR', 0),
-(13,'Mirko','Mirkic',1,'MM88888',1,3,'Korzo 3','1997-06-06','HR', 0),
-(14,'Nemanja','Nemanjovic',1,'NN99999',3,7,'Bulevar 1','1993-03-03','RS', 0),
-(15,'Zara','Zaric',1,'OO11223',2,5,'Mejtash 7','1986-02-02','BIH', 0),
-(16,'Petar','Petric',2,'PP44556',1,1,'Savska 77','1994-05-05','HR', 0),
-(17,'Renata','Renatic',1,'RR55667',1,2,'Katin Put 22',NULL,'HR', 0),
-(18,'Sara','Saric',2,'SS66778',1,3,'Uvala 6','1992-09-15','HR', 0),
-(19,'Tomica','Tomcic',1,'TT77889',3,8,'Voždovacka 3','1985-05-17','RS', 0),
-(20,'Klara','Klaric',1,'UU88990',2,5,'Ferhadija 10',NULL,'BIH', 0),
-(21,'Vedran','Vedric',2,'VV99001',1,1,'Tresnjevacka 8','1995-07-07','HR', 0),
-(22,'Zara','Zaric',1,'ZZ10101',1,2,'Bacvice 12','1991-01-21','HR', 0),
-(23,'Zarko','Zarkic',2,'ZZ20202',1,3,'Susacka 9','1987-04-09','HR', 0),
-(24,'Adrian','Adric',2,'AA30303',4,9,'Via Roma 2','1999-08-11','IT', 0),
-(25,'Bruno','Brunovic',2,'BB40404',2,6,'Ilidza 19','1988-02-28','BIH', 0),
-(26,'Sandra','Sandric',1,'CC50505',1,1,'Trnje 3','1994-03-22','HR', 0),
-(27,'Dora','Doric',2,'DD60606',1,4,'Marjan 13','1998-06-18','HR', 0),
-(28,'Ema','Emic',1,'EE70707',1,3,'Kastavska 4',NULL,'HR', 0),
-(29,'Franjo','Franjcic',2,'FF80808',5,10,'Prenzlauer 1','1993-12-30','DE', 0),
-(30,'John','Doe',2,'JS90909',1,1,'Radnicka 15','1980-05-05','UK', 1),
-(31,'Peter','Peterowski',2,'AB7328',1,1,'Radnicka 15','1980-05-05','UK', 0),
-(32,'Tena','Tencic',1,'AP11111',1,2,'Pulska 1','1992-11-11','HR', 0),
-(33,'Igor','Igorovic',2,'IG22222',1,2,'Kandlerova 7','1989-04-23','HR', 0);
+INSERT INTO gost
+(id, ime, prezime, vrsta_dokumenta_id, broj_dokumenta, prebivaliste_drzava_id, prebivaliste_grad_id, prebivaliste_adresa, datum_rodjenja, drzavljanstvo, vip_status)
+VALUES
+(1,'Ana','Anic',1,'AA12345',1,1,'Ilica 12','1990-02-15','Hrvat',1),
+(2,'Ivica','Ivicic',2,'BB22345',1,2,'Put Mora 5','1988-07-21','Hrvat',0),
+(3,'Marko','Maric',1,'MM44556',1,3,'Kvarnerska 7','1995-01-01','Hrvat',0),
+(4,'Darko','Daric',2,'DD99887',2,3,'Ulica 1','1989-03-12','Bosanac',0),
+(5,'Ena','Enic',1,'EE23232',3,5,'Nemanjina 10','1992-09-10','Srbin',1),
+(6,'Filip','Filipic',1,'FF11111',1,1,'Ilica 88','1993-05-19','Hrvat',0),
+(7,'Goran','Goric',2,'GG22222',1,2,'Primorska 6','1985-10-10','Hrvat',0),
+(8,'Helena','Helnic',1,'HH33333',1,3,'Trg Europe 2','2000-05-05','Hrvat',0),
+(9,'Ivan','Ivanovic',1,'II44444',2,3,'Aleja 9','1987-08-08','Bosanac',0),
+(10,'Jasna','Jasincic',2,'JJ55555',3,5,'Centar bb','1991-09-09','Srbin',0),
+(11,'Karlo','Karlic',1,'KK66666',1,1,'Maksimirska 55','1996-04-04','Hrvat',0),
+(12,'Lana','Lanic',2,'LL77777',1,4,'Obala 18','1984-12-12','Hrvat',0),
+(13,'Mirko','Mirkic',1,'MM88888',1,3,'Korzo 3','1997-06-06','Hrvat',0),
+(14,'Nemanja','Nemanjovic',1,'NN99999',3,5,'Bulevar 1','1993-03-03','Srbin',0),
+(15,'Zara','Zaric',1,'OO11223',2,3,'Mejtash 7','1986-02-02','Bosanac',0),
+(16,'Petar','Petric',2,'PP44556',1,1,'Savska 77','1994-05-05','Hrvat',0),
+(17,'Renata','Renatic',1,'RR55667',1,2,'Katin Put 22','2003-05-05','Hrvat',0),
+(18,'Sara','Saric',2,'SS66778',1,3,'Uvala 6','1992-09-15','Hrvat',0),
+(19,'Tomica','Tomcic',1,'TT77889',3,5,'Vozdovacka 3','1985-05-17','Srbin',0),
+(20,'Klara','Klaric',1,'UU88990',2,3,'Ferhadija 10','2001-03-03','Bosanac',0),
+(21,'Vedran','Vedric',2,'VV99001',1,1,'Tresnjevacka 8','1995-07-07','Hrvat',0),
+(22,'Zarko','Zarkic',2,'ZZ20202',1,3,'Susacka 9','1987-04-09','Hrvat',0),
+(23,'Adrian','Adric',2,'AD30303',4,7,'Via Roma 2','1999-08-11','Talijan',0),
+(24,'Bruno','Brunovic',2,'BR40404',2,3,'Ilidza 19','1988-02-28','Bosanac',0),
+(25,'Sandra','Sandric',1,'SA50505',1,1,'Trnje 3','1994-03-22','Hrvat',0),
+(26,'Dora','Doric',2,'DO60606',1,4,'Marjan 13','1998-06-18','Hrvat',0),
+(27,'Ema','Emic',1,'EM70707',1,3,'Kastavska 4','2010-10-10','Hrvat',0),
+(28,'Franjo','Franjcic',2,'FR80808',5,9,'Prenzlauer 1','1993-12-30','Njemac',0),
+(29,'John','Doe',2,'JD90909',6,11,'Baker Street 15','1980-05-05','Britanac',1),
+(30,'Peter','Peterowski',2,'PP73280',6,12,'Oxford 3','1980-05-05','Britanac',0),
+(31,'Tena','Tencic',1,'TE11111',1,2,'Pulska 1','1992-11-11','Hrvat',0),
+(32,'Igor','Igorovic',2,'IG22222',1,2,'Kandlerova 7','1989-04-23','Hrvat',0),
+(33,'Mate','Matic',1,'MA30001',1,5,'Stradun 1','1990-01-10','Hrvat',0),
+(34,'Nika','Nikic',1,'NI30002',1,2,'Riva 12','1997-03-14','Hrvat',0),
+(35,'Kristina','Krizic',2,'KR30003',7,13,'Trg 5','1991-06-20','Slovenac',0),
+(36,'Boris','Boric',2,'BO30004',9,17,'Rakoczi 10','1986-09-09','Madjar',0),
+(37,'Elena','Elenic',1,'EL30005',8,15,'Ring 2','1995-12-01','Austrijanac',0),
+(38,'Milan','Milic',2,'MI30006',10,19,'Obala 4','1983-02-18','Crnogorac',0),
+(39,'Sofija','Sofic',2,'SO30007',11,21,'Centar 7','1994-07-07','Makedonac',0),
+(40,'Arben','Arbeni',2,'AR30008',12,23,'Bulevar 1','1988-08-08','Albanac',0),
+(41,'Giorgio','Rossi',2,'GI30009',4,8,'Corso 9','1987-05-15','Talijan',0),
+(42,'Pierre','Dubois',2,'PI30010',14,27,'Rue 1','1992-10-10','Francuz',0),
+(43,'Carlos','Garcia',2,'CA30011',15,29,'Calle 8','1993-11-11','Spanjolac',0),
+(44,'Joao','Silva',2,'JO30012',16,31,'Rua 3','1989-04-04','Portugalac',0),
+(45,'Sven','Svensson',2,'SV30013',20,39,'Main 2','1996-06-06','Svedjanin',0),
+(46,'Ola','Hansen',2,'OH30014',21,41,'Gate 5','1985-01-01','Norvezanin',0),
+(47,'Piotr','Kowalski',2,'PK30015',25,49,'Ulica 2','1991-02-02','Poljak',0),
+(48,'Elif','Yilmaz',2,'EY30016',30,59,'Ataturk 10','1998-09-09','Turcin',0),
+(49,'Mia','Mikic',1,'MM30017',1,4,'Korzo 12','1999-12-12','Hrvat',1),
+(50,'Ayse','Kaya',2,'AK40002',30,60,'Istiklal 20','1996-01-16','Turcin',0);
+
 
 /*
 -- 3. SMJEŠTAJNI KAPACITETI
@@ -176,82 +230,349 @@ INSERT INTO gost (id, ime, prezime, vrsta_dokumenta_id, broj_dokumenta, prebival
 
 -- 7. TIP_SOBA
 INSERT INTO tip_sobe (id, naziv, opis, standardni_kapacitet) VALUES
-(1,'Single','Jednokrevetna',1), (2,'Double','Dvokrevetna',2),
-(3,'Triple','Trokrevetna',3), (4,'Suite','Apartman',4);
+(1,'Single', 'Jednokrevetna soba', 1),
+(2,'Double', 'Dvokrevetna soba (bracni krevet)', 2),
+(3,'Twin', 'Dvokrevetna soba (2 odvojena kreveta)', 2),
+(4,'Triple', 'Trokrevetna soba', 3),
+(5,'Family', 'Obiteljska soba', 4),
+(6,'Suite', 'Apartman / suite', 4),
+(7,'Junior Suite', 'Manji apartman (junior suite)', 3),
+(8,'Deluxe Double', 'Dvokrevetna deluxe soba', 2),
+(9,'Superior Double', 'Dvokrevetna superior soba', 2),
+(10,'Superior Twin', 'Dvokrevetna superior soba (2 odvojena kreveta)', 2),
+(11,'Economy Single', 'Jednokrevetna economy soba', 1),
+(12,'Economy Double', 'Dvokrevetna economy soba', 2),
+(13,'Quadruple', 'Cetverokrevetna soba', 4),
+(14,'Penthouse Suite', 'Najluksuzniji apartman', 4),
+(15,'Accessible Double', 'Prilagodjena soba za osobe s invaliditetom', 2),
+(16,'Double + Extra Bed', 'Dvokrevetna s pomocnim krevetom', 3),
+(17,'Twin + Extra Bed', 'Twin soba s pomocnim krevetom', 3),
+(18,'Studio', 'Studio soba s cajnom kuhinjom', 2),
+(19,'Executive Suite', 'Apartman za poslovne goste', 4),
+(20,'Honeymoon Suite', 'Apartman za mladence', 2);
+
+
 
 -- 8. SOBA
 INSERT INTO soba (id, broj, tip_sobe_id, kapacitet_osoba, kat, minibar, balkon, status) VALUES
-(1,101,1,1,1,0,0,'SLOBODNA'), (2,102,1,1,1,0,0,'ZAUZETA'),
-(3,103,2,2,1,1,0,'SLOBODNA'), (4,104,2,2,1,1,0,'IZVAN_FUNKCIJE'),
-(5,105,2,2,1,1,1,'SLOBODNA'), (6,201,3,3,2,1,0,'ZAUZETA'),
-(7,202,3,3,2,1,0,'SLOBODNA'), (8,203,3,3,2,1,1,'SLOBODNA'),
-(9,204,2,2,2,1,1,'ZAUZETA'), (10,205,1,1,2,0,0,'SLOBODNA'),
-(11,301,4,4,3,1,1,'SLOBODNA'), (12,302,4,4,3,1,1,'ZAUZETA'),
-(13,303,4,4,3,1,1,'SLOBODNA'), (14,304,2,2,3,1,0,'IZVAN_FUNKCIJE'),
-(15,305,2,2,3,1,0,'SLOBODNA'), (16,401,1,1,4,0,0,'SLOBODNA'),
-(17,402,2,2,4,1,1,'ZAUZETA'), (18,403,3,3,4,1,0,'SLOBODNA'),
-(19,404,4,4,4,1,1,'SLOBODNA'), (20,405,2,2,4,1,0,'SLOBODNA');
+-- 1–15: jeftinije (Single / Economy Single / Economy Double)
+(1,101,1,1,1,0,0,'SLOBODNA'),
+(2,102,1,1,1,0,0,'ZAUZETA'),
+(3,103,11,1,1,0,0,'SLOBODNA'),
+(4,104,11,1,1,0,0,'SLOBODNA'),
+(5,105,12,2,1,0,0,'SLOBODNA'),
+(6,106,11,1,1,0,0,'CISCENJE'),
+(7,107,12,2,1,0,0,'SLOBODNA'),
+(8,108,1,1,1,0,0,'SLOBODNA'),
+(9,109,11,1,1,0,0,'SLOBODNA'),
+(10,110,12,2,1,0,0,'ZAUZETA'),
+(11,111,1,1,1,0,0,'SLOBODNA'),
+(12,112,11,1,1,0,0,'SLOBODNA'),
+(13,113,12,2,1,0,0,'SLOBODNA'),
+(14,114,1,1,1,0,0,'SLOBODNA'),
+(15,115,11,1,1,0,0,'IZVAN_FUNKCIJE'),
+
+-- 16–32: standard (Double / Twin / Superior / Deluxe / Studio)
+(16,201,2,2,2,1,0,'ZAUZETA'),
+(17,202,2,2,2,1,0,'SLOBODNA'),
+(18,203,3,2,2,1,0,'SLOBODNA'),
+(19,204,3,2,2,1,0,'SLOBODNA'),
+(20,205,9,2,2,1,1,'SLOBODNA'),   -- Superior Double
+(21,206,10,2,2,1,1,'ZAUZETA'),    -- Superior Twin
+(22,207,8,2,2,1,1,'SLOBODNA'),    -- Deluxe Double
+(23,208,2,2,2,1,0,'CISCENJE'),
+(24,209,3,2,2,1,0,'SLOBODNA'),
+(25,210,18,2,2,1,1,'SLOBODNA'),   -- Studio
+(26,211,2,2,2,1,0,'SLOBODNA'),
+(27,212,3,2,2,1,0,'ZAUZETA'),
+(28,213,9,2,2,1,1,'SLOBODNA'),
+(29,214,10,2,2,1,1,'SLOBODNA'),
+(30,215,8,2,2,1,1,'SLOBODNA'),
+(31,216,2,2,2,1,0,'SLOBODNA'),
+(32,217,3,2,2,1,0,'IZVAN_FUNKCIJE'),
+
+-- 33–42: veće (Triple / Family / Quadruple / Extra bed)
+(33,301,4,3,3,1,0,'SLOBODNA'),    -- Triple
+(34,302,4,3,3,1,1,'ZAUZETA'),
+(35,303,4,3,3,1,0,'SLOBODNA'),
+(36,304,5,4,3,1,1,'SLOBODNA'),    -- Family
+(37,305,13,4,3,1,1,'SLOBODNA'),   -- Quadruple
+(38,306,16,3,3,1,0,'SLOBODNA'),   -- Double + Extra Bed
+(39,307,17,3,3,1,0,'ZAUZETA'),    -- Twin + Extra Bed
+(40,308,5,4,3,1,1,'CISCENJE'),
+(41,309,13,4,3,1,1,'SLOBODNA'),
+(42,310,4,3,3,1,0,'SLOBODNA'),
+
+-- 43–47: suite (Suite / Junior / Executive)
+(43,401,6,4,4,1,1,'SLOBODNA'),    -- Suite
+(44,402,7,3,4,1,1,'ZAUZETA'),     -- Junior Suite
+(45,403,6,4,4,1,1,'SLOBODNA'),
+(46,404,19,4,4,1,1,'SLOBODNA'),   -- Executive Suite
+(47,405,7,3,4,1,1,'CISCENJE'),
+
+-- 48–50: luksuz ograničeno (2 Honeymoon, 1 Penthouse)
+(48,501,20,2,5,1,1,'SLOBODNA'),   -- Honeymoon Suite
+(49,502,20,2,5,1,1,'ZAUZETA'),    -- Honeymoon Suite
+(50,503,14,4,5,1,1,'SLOBODNA');   -- Penthouse Suite
+
+
+
 
 -- 9. CJENIK_SOBA
 INSERT INTO cjenik_soba (tip_sobe_id, datum_od, datum_do, cijena_nocenja, boravisna_pristojba_po_osobi) VALUES
-(1,'2025-01-01','2025-05-31',50.00,2.00), (1,'2025-06-01','2025-09-30',70.00,2.00),
-(2,'2025-01-01','2025-05-31',80.00,2.00), (2,'2025-06-01','2025-09-30',110.00,2.00),
-(3,'2025-01-01','2025-05-31',100.00,2.00), (3,'2025-06-01','2025-09-30',140.00,2.00),
-(4,'2025-01-01','2025-05-31',150.00,2.00), (4,'2025-06-01','2025-09-30',220.00,2.00);
+-- 1 Single
+(1,'2026-04-01','2026-09-30',75.00,2.00),
+(1,'2026-10-01','2027-03-31',55.00,2.00),
+-- 2 Double
+(2,'2026-04-01','2026-09-30',115.00,2.00),
+(2,'2026-10-01','2027-03-31',85.00,2.00),
+-- 3 Twin
+(3,'2026-04-01','2026-09-30',115.00,2.00),
+(3,'2026-10-01','2027-03-31',85.00,2.00),
+-- 4 Triple
+(4,'2026-04-01','2026-09-30',160.00,2.00),
+(4,'2026-10-01','2027-03-31',120.00,2.00),
+-- 5 Family
+(5,'2026-04-01','2026-09-30',190.00,2.00),
+(5,'2026-10-01','2027-03-31',140.00,2.00),
+-- 6 Suite
+(6,'2026-04-01','2026-09-30',280.00,2.00),
+(6,'2026-10-01','2027-03-31',200.00,2.00),
+-- 7 Junior Suite
+(7,'2026-04-01','2026-09-30',230.00,2.00),
+(7,'2026-10-01','2027-03-31',170.00,2.00),
+-- 8 Deluxe Double
+(8,'2026-04-01','2026-09-30',155.00,2.00),
+(8,'2026-10-01','2027-03-31',115.00,2.00),
+-- 9 Superior Double
+(9,'2026-04-01','2026-09-30',135.00,2.00),
+(9,'2026-10-01','2027-03-31',100.00,2.00),
+-- 10 Superior Twin
+(10,'2026-04-01','2026-09-30',135.00,2.00),
+(10,'2026-10-01','2027-03-31',100.00,2.00),
+-- 11 Economy Single
+(11,'2026-04-01','2026-09-30',60.00,2.00),
+(11,'2026-10-01','2027-03-31',45.00,2.00),
+-- 12 Economy Double
+(12,'2026-04-01','2026-09-30',95.00,2.00),
+(12,'2026-10-01','2027-03-31',70.00,2.00),
+-- 13 Quadruple
+(13,'2026-04-01','2026-09-30',205.00,2.00),
+(13,'2026-10-01','2027-03-31',150.00,2.00),
+-- 14 Penthouse Suite
+(14,'2026-04-01','2026-09-30',480.00,2.00),
+(14,'2026-10-01','2027-03-31',350.00,2.00),
+-- 15 Accessible Double
+(15,'2026-04-01','2026-09-30',120.00,2.00),
+(15,'2026-10-01','2027-03-31',90.00,2.00),
+-- 16 Double + Extra Bed
+(16,'2026-04-01','2026-09-30',145.00,2.00),
+(16,'2026-10-01','2027-03-31',110.00,2.00),
+-- 17 Twin + Extra Bed
+(17,'2026-04-01','2026-09-30',145.00,2.00),
+(17,'2026-10-01','2027-03-31',110.00,2.00),
+-- 18 Studio
+(18,'2026-04-01','2026-09-30',170.00,2.00),
+(18,'2026-10-01','2027-03-31',125.00,2.00),
+-- 19 Executive Suite
+(19,'2026-04-01','2026-09-30',330.00,2.00),
+(19,'2026-10-01','2027-03-31',240.00,2.00),
+-- 20 Honeymoon Suite
+(20,'2026-04-01','2026-09-30',360.00,2.00),
+(20,'2026-10-01','2027-03-31',260.00,2.00);
+
+
 
 /*
 -- 4. USLUGE, RESTORAN I SKLADIŠTE
 */
 
 -- 10. KATEGORIJA_USLUGE (Hrana, Piće, Wellness...)
-INSERT INTO kategorija_usluge (id, naziv) VALUES 
-(1, 'Hrana'), (2, 'Pice'), (3, 'Wellness'), (4, 'Ostalo');
+INSERT INTO kategorija_usluge (id, naziv) VALUES
+(1,'Hrana'),
+(2,'Pice'),
+(3,'Wellness'),
+(4,'Ostalo');
 
 -- 11. USLUGA 
 INSERT INTO usluga (id, kategorija_id, naziv, opis, jedinica_mjere, cijena_trenutna) VALUES
-(1, 1, 'Dorucak','Svedski stol','kom', 10.00),
-(2, 1, 'Polupansion','Dorucak i vecera','dan', 25.00),
-(3, 4, 'Parking','Dnevni parking','dan', 5.00),
-(4, 3, 'Spa','Koristenje spa tretmana','kom', 15.00),
-(5, 4, 'Najam bicikla','Najam bicikla po danu','dan', 7.00),
-(6, 1, 'Room service','Posluga u sobu','kom', 8.00),
-(7, 4, 'Najam vozila','Najam vozila po danu','dan', 40.00),
-(8, 2, 'Kava','Espresso','kom', 2.00), -- NOVO
-(9, 2, 'Coca Cola','0.25l','kom', 3.50); -- NOVO
+-- Hrana
+(1, 1,'Dorucak','Svedski stol','kom',10.00),
+(2, 1,'Polupansion','Dorucak i vecera','dan',25.00),
+(3, 1,'Pansion','Dorucak, rucak i vecera','dan',40.00),
+(4, 1,'Rucak','Dnevni meni','kom',14.00),
+(5, 1,'Vecera','A la carte','kom',18.00),
+(6, 1,'Sendvic','Sendvic po izboru','kom',6.50),
+(7, 1,'Salata','Sezonska salata','kom',7.00),
+(8, 1,'Burger','Burger 200g','kom',12.00),
+(9, 1,'Pizza Margherita','Klasicna pizza','kom',11.00),
+(10,1,'Pasta Carbonara','Tjestenina','kom',13.00),
+(11,1,'Riblji tanjur','Dnevni ulov','kom',22.00),
+(12,1,'Desert','Kolac dana','kom',5.50),
+-- Pice
+(13,2,'Kava','Espresso','kom',2.00),
+(14,2,'Cappuccino','Kava s mlijekom','kom',2.50),
+(15,2,'Caj menta','Topli caj','kom',2.20),
+(16,2,'Prirodni sok','0.2l','kom',3.00),
+(17,2,'Voda','0.5l','kom',1.80),
+(18,2,'Coca Cola','0.25l','kom',3.50),
+(19,2,'Pivo','0.33l','kom',4.00),
+(20,2,'Vino casa','0.2l','kom',4.50),
+-- Wellness
+(21,3,'Spa','Koristenje spa zone','kom',15.00),
+(22,3,'Masaza 30 min','Relax masaza','kom',25.00),
+(23,3,'Masaza 60 min','Relax masaza','kom',45.00),
+(24,3,'Sauna','60 min','kom',10.00),
+(25,3,'Jacuzzi','60 min','kom',12.00),
+-- Ostalo
+(26,4,'Parking','Dnevni parking','dan',5.00),
+(27,4,'Najam bicikla','Najam bicikla po danu','dan',7.00),
+(28,4,'Najam vozila','Najam vozila po danu','dan',40.00),
+(29,4,'Room service','Posluga u sobu','kom',8.00),
+(30,4,'Kasni checkout','Checkout nakon standardnog vremena','kom',25.00);
 
 -- 12. ARTIKL
 INSERT INTO artikl (id, naziv, stanje_zaliha, jedinica_mjere, nabavna_cijena) VALUES
-(1, 'Jaja', 1000, 'kom', 0.20),
-(2, 'Kruh', 50, 'kg', 1.50),
-(3, 'Kava u zrnu', 20, 'kg', 15.00),
-(4, 'Coca Cola Boca', 200, 'kom', 1.00),
-(5, 'Mlijeko', 100, 'lit', 0.90),
-(6, 'Bicikl', 10, 'kom', 200.00),
-(7, 'Mljeveno meso', 10, 'kg', 12.00),
-(8, 'Slanina', 12, 'kg', 20.00),
-(9, 'Limuni', 2, 'kg', 1.00),
-(10, 'Čaj od mente u vrečicama', 25, 'kom', 0.17),
-(11, 'Plasma keksi', 15, 'kom', 2.50),
-(12, 'Riža', 10, 'kg', 1.00),
-(13, 'Sir - Gauda', 1, 'kg', 10.15),
-(14, 'Srdele', 9, 'kg', 20.00),
-(15, 'Hobotnica', 10, 'kg', 30.00),
-(16, 'Parmezan-ribani', 2, 'kg', 72.00),
-(17, 'Pjenušac Freixenet Premium Carta', 6, 'kom', 8.00),
-(18, 'Korlat Syrah Vrhunsko', 3, 'kom', 17.00),
-(19, 'Kutjevo Graševina', 7, 'kom', 8.00),
-(20, 'Dimmes Drniški pršut', 5, 'kg', 32.00);
+(1,'Jaja',1000,'kom',0.20),
+(2,'Kruh',50,'kg',1.50),
+(3,'Kava u zrnu',20,'kg',15.00),
+(4,'Coca Cola boca',200,'kom',1.00),
+(5,'Mlijeko',100,'lit',0.90),
+(6,'Bicikl',10,'kom',200.00),
+(7,'Mljeveno meso',10,'kg',12.00),
+(8,'Slanina',12,'kg',20.00),
+(9,'Limuni',2,'kg',1.00),
+(10,'Caj menta vrecice',25,'kom',0.17),
+(11,'Plasma keksi',15,'kom',2.50),
+(12,'Riza',10,'kg',1.00),
+(13,'Sir gauda',1,'kg',10.15),
+(14,'Srdele',9,'kg',20.00),
+(15,'Hobotnica',10,'kg',30.00),
+(16,'Parmezan ribani',2,'kg',72.00),
+(17,'Pjenusac Freixenet',6,'kom',8.00),
+(18,'Vino crno',3,'kom',8.00),
+(19,'Vino bijelo',7,'kom',8.00),
+(20,'Drniski prsut',5,'kg',32.00),
+(21,'Brasno',25,'kg',0.80),
+(22,'Secer',20,'kg',0.90),
+(23,'Sol',10,'kg',0.40),
+(24,'Maslinovo ulje',15,'lit',6.50),
+(25,'Piletina file',20,'kg',7.50),
+(26,'Tjestenina',30,'kg',1.30),
+(27,'Rajcica',25,'kg',2.00),
+(28,'Sir mozzarella',10,'kg',6.00),
+(29,'Voda boca 0.5l',200,'kom',0.25),
+(30,'Papirnati ubrusi',50,'pak',1.20),
+(31,'Pivo boca 0.33l',120,'kom',1.10),
+(32,'Sok naranca 1l',30,'kom',1.80);
 
 -- 13. NORMATIV
 INSERT INTO normativ (usluga_id, artikl_id, kolicina_potrosnje) VALUES
-(1, 1, 2.00), -- Doručak troši 2 jaja
-(1, 2, 0.20), -- Doručak troši 0.2kg kruha
-(8, 3, 0.01), -- Kava troši 0.01kg zrna
-(9, 4, 1.00); -- Cola troši 1 bocu
+-- Dorucak (1)
+(1,1,2.00),
+(1,2,0.20),
+(1,5,0.20),
+(1,13,0.03),
+-- Polupansion (2) - pojednostavljeno
+(2,1,1.00),
+(2,2,0.10),
+(2,5,0.10),
+-- Pansion (3) - dodano (da ne fali)
+(3,1,2.00),
+(3,2,0.20),
+(3,5,0.20),
+(3,25,0.25),
+(3,27,0.20),
+(3,7,0.20),
+-- Rucak (4)
+(4,25,0.25),
+(4,27,0.20),
+(4,24,0.01),
+-- Vecera (5)
+(5,7,0.25),
+(5,27,0.25),
+(5,24,0.01),
+-- Sendvic (6)
+(6,2,0.15),
+(6,13,0.05),
+(6,8,0.03),
+-- Salata (7)
+(7,27,0.20),
+(7,24,0.01),
+(7,23,0.01),
+-- Burger (8)
+(8,7,0.20),
+(8,2,0.10),
+(8,27,0.10),
+-- Pizza Margherita (9)
+(9,21,0.20),
+(9,27,0.15),
+(9,28,0.12),
+(9,24,0.01),
+-- Pasta Carbonara (10)
+(10,26,0.15),
+(10,5,0.05),
+(10,8,0.03),
+(10,16,0.01),
+-- Riblji tanjur (11)
+(11,14,0.30),
+(11,24,0.01),
+(11,9,0.02),
+-- Desert (12)
+(12,21,0.10),
+(12,22,0.05),
+(12,5,0.05),
+-- Kava (13)
+(13,3,0.01),
+-- Cappuccino (14)
+(14,3,0.01),
+(14,5,0.15),
+-- Caj menta (15)
+(15,10,1.00),
+-- Prirodni sok 0.2l (16) - dodano
+(16,32,0.20),
+-- Voda 0.5l (17)
+(17,29,1.00),
+-- Coca Cola 0.25l (18)
+(18,4,1.00),
+-- Pivo 0.33l (19) - dodano
+(19,31,1.00),
+-- Vino casa 0.2l (20) - pojednostavljeno
+(20,19,0.20);
+
 
 -- 14. RESTORAN_STOL 
 INSERT INTO restoran_stol (id, broj_stola, broj_mjesta, lokacija) VALUES
-(1, 1, 4, 'Terasa'), (2, 2, 2, 'Terasa'), (3, 3, 4, 'Unutra'), (4, 4, 6, 'Unutra');
+(1,1,2,'Terasa'),
+(2,2,2,'Terasa'),
+(3,3,4,'Terasa'),
+(4,4,4,'Terasa'),
+(5,5,6,'Terasa'),
+(6,6,2,'Terasa'),
+(7,7,4,'Terasa'),
+(8,8,2,'Terasa'),
+(9,9,4,'Terasa'),
+(10,10,6,'Terasa'),
+(11,11,2,'Unutra'),
+(12,12,2,'Unutra'),
+(13,13,4,'Unutra'),
+(14,14,4,'Unutra'),
+(15,15,6,'Unutra'),
+(16,16,2,'Unutra'),
+(17,17,4,'Unutra'),
+(18,18,2,'Unutra'),
+(19,19,4,'Unutra'),
+(20,20,6,'Unutra'),
+(21,21,2,'Unutra'),
+(22,22,2,'Unutra'),
+(23,23,4,'Unutra'),
+(24,24,4,'Unutra'),
+(25,25,6,'Unutra'),
+(26,26,2,'VIP'),
+(27,27,4,'VIP'),
+(28,28,6,'VIP'),
+(29,29,2,'VIP'),
+(30,30,4,'VIP');
 
 /*
 -- 5. REZERVACIJE I MARKETING
