@@ -104,20 +104,22 @@ INSERT INTO grad (naziv, drzava_id) VALUES
 
 
 -- 3. VRSTA_DOKUMENTA
-INSERT INTO vrsta_dokumenta (id, naziv) VALUES
-(1,'Osobna iskaznica'), (2,'Putovnica'), (3,'Vozacka dozvola');
+INSERT INTO vrsta_dokumenta (naziv) VALUES
+('Osobna iskaznica'), 
+('Putovnica'), 
+('Vozacka dozvola');
 
 /*
 -- 2. ORGANIZACIJA I LJUDI
 */
 
 -- 4. ODJEL
-INSERT INTO odjel (id, naziv, tel_kontakt, lokalni) VALUES
-(1,'Recepcija','010/100-100',100),
-(2,'Domaćinstvo','010/100-200',200),
-(3,'Održavanje','010/100-300',300),
-(4,'Uprava','010/100-400',400),
-(5,'Restoran i Bar','010/100-500',500); -- NOVI ODJEL
+INSERT INTO odjel (naziv, tel_kontakt, lokalni) VALUES
+('Recepcija','010/100-100',100),
+('Domaćinstvo','010/100-200',200),
+('Održavanje','010/100-300',300),
+('Uprava','010/100-400',400),
+('Restoran i Bar','010/100-500',500); -- NOVI ODJEL
 
 -- 5. ZAPOSLENIK
 INSERT INTO zaposlenik (id, odjel_id, ime, prezime, tel_kontakt, pozicija, je_voditelj_odjela, korisnicko_ime, lozinka_hash) VALUES
