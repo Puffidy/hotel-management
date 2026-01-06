@@ -224,4 +224,22 @@ INSERT INTO servis_dnevni_nalog (zaposlenik_id, soba_id, korisnik_placa, opis, r
 -- 25. RECENZIJA
 INSERT INTO recenzija (rezervacija_id, ocjena, komentar) VALUES
 (1, 5, 'Sve je bilo odlično!'),
-(2, 4, 'Soba super, doručak prosječan.');
+(2, 4, 'Soba super, doručak prosječan.'),
+(3, 3, 'Lijep pogled, mala soba.'),
+(4, 1, 'Bezobrazno osoblje!!! Ne preporučujem nikome sa obitelji'),
+(5, 5, 'Odlična hrana, super smo zadovoljni i dolazimo iduce godine'),
+(6, 2, 'Cijena je nerealna za ovakvu sobu koja je zadnje renovirana za vrijeme Druga Tita'),
+(7, 4, 'Sve je bilo čisto kada smo došli, osoblje je spremno pomoći. Jedino je parking teško za naći.'),
+(8, 5, 'Uživali smo svaki dan i soba je dovoljna za dvoje. Internet je začuđujuče brz.'),
+(9, 3, 'Hrana je bila hladna kada je došla i malo neslana. Soba je uredna i ima sve što nam je bilo potrebno.'),
+(10, 1, 'Kada smo pronašli mrtvog miša u hodniku i to rekli sobarici ona nam je odgovorila -Barem je mrtav-. Grozno'),
+(11, 4, 'Omjer cijene i usluge je malo nerealan, ali iskustvo je bilo super'),
+(12, 5, 'Hrana je top, pogled sa terase je taman za jutarnju kavicu i osoblje je spremno pomoći'),
+(13, 2, 'Food is too spicy, everyone is smoking and there is no reliable parking. Only redeeming quality is the prices'),
+(14, 3, 'Ništa posebno, vidio sam i bolje'),
+(15, 2, 'Trazila sam konobara jos majoneze i rekao mi je da to neide uz grah. Nije ovo više jugoslavija pusti me da stavljam majonezu u grah!!!!'),
+(16, 5, 'TOP TOP TOP mjesto!!! Hrana je najbolja koju sam jela, soba prekrasno miriši i sve je blizu'),
+(17, 3, 'Overall the service is okay. The staff is not very enthusiastic about their job and they dont like Trump #MAGA'),
+(18, 4, 'Malo je skuplje ali vrijedi tih novaca. Jedini problem je to što je miris u sobama malo previše naporan'),
+(19, 5, 'Žena htjela stavit majonezu u grah, konobar odgovara -Ti nisi normalna-, deda je legenda'),
+(20, 2, 'Rekli su nam da nesmijemo puštati THOMPSONA pre glasno');
