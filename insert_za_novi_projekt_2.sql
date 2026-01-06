@@ -136,7 +136,21 @@ INSERT INTO artikl (id, naziv, stanje_zaliha, jedinica_mjere, nabavna_cijena) VA
 (3, 'Kava u zrnu', 20, 'kg', 15.00),
 (4, 'Coca Cola Boca', 200, 'kom', 1.00),
 (5, 'Mlijeko', 100, 'lit', 0.90),
-(6, 'Bicikl', 10, 'kom', 200.00);
+(6, 'Bicikl', 10, 'kom', 200.00),
+(7, 'Mljeveno meso', 10, 'kg', 12.00),
+(8, 'Slanina', 12, 'kg', 20.00),
+(9, 'Limuni', 2, 'kg', 1.00),
+(10, 'Čaj od mente u vrečicama', 25, 'kom', 0.17),
+(11, 'Plasma keksi', 15, 'kom', 2.50),
+(12, 'Riža', 10, 'kg', 1.00),
+(13, 'Sir - Gauda', 1, 'kg', 10.15),
+(14, 'Srdele', 9, 'kg', 20.00),
+(15, 'Hobotnica', 10, 'kg', 30.00),
+(16, 'Parmezan-ribani', 2, 'kg', 72.00),
+(17, 'Pjenušac Freixenet Premium Carta', 6, 'kom', 8.00),
+(18, 'Korlat Syrah Vrhunsko', 3, 'kom', 17.00),
+(19, 'Kutjevo Graševina', 7, 'kom', 8.00),
+(20, 'Dimmes Drniški pršut', 5, 'kg', 32.00);
 
 -- 13. NORMATIV
 INSERT INTO normativ (usluga_id, artikl_id, kolicina_potrosnje) VALUES
@@ -156,7 +170,9 @@ INSERT INTO restoran_stol (id, broj_stola, broj_mjesta, lokacija) VALUES
 -- 15. PROMOCIJA 
 INSERT INTO promocija (id, naziv, kod_kupona, popust_postotak, datum_pocetka, datum_zavrsetka) VALUES
 (1, 'Zimski popust', 'ZIMA24', 10.00, '2024-01-01', '2024-02-28'),
-(2, 'Ljeto rani booking', 'LJETO25', 15.00, '2025-01-01', '2025-05-01');
+(2, 'Ljeto rani booking', 'LJETO25', 15.00, '2025-01-01', '2025-05-01'),
+(3, 'Business ponuda', 'BUSINESS25', 10.00, '2025-01-01', '2025-12-31'),
+(4, 'Obiteljska čarolija', 'FAMILYFUN', 12.00, '2025-01-01', '2025-06-30');
 
 -- 16. REZERVACIJA 
 INSERT INTO rezervacija (id, gost_nositelj_id, zaposlenik_id, soba_id, promocija_id, datum_rezervacije, pocetak_datum, kraj_datum, vrijeme_check_in, vrijeme_check_out, broj_osoba, status, napomena) VALUES
@@ -214,12 +230,46 @@ INSERT INTO stavka_racuna (racun_id, usluga_id, tip_stavke, opis, kolicina, cije
 -- 23. CISCENJE_DNEVNI_NALOG
 INSERT INTO ciscenje_dnevni_nalog (zaposlenik_id, rezervacija_id, prijavljena_steta, opis_stete, obavljeno) VALUES
 (3, 1, 0, NULL, 1),
-(4, 2, 1, 'Mrlja na tepihu', 1);
+(4, 2, 1, 'Mrlja na tepihu', 1),
+(4, 3, 0, NULL, 1),
+(3, 4, 0, NULL, 1),
+(3, 5, 1, 'Strgana čaša za vino', 1),
+(3, 6, 0, NULL, 1),
+(4, 7, 1, 'Poderali plahtu', 1),
+(3, 8, 1, 'Zaštopan umivaonik', 0),
+(3, 9, 0, NULL, 1),
+(4, 10, 0, NULL, 1),
+(4, 11, 0, NULL, 1),
+(4, 12, 1, 'Rupe u fahu', 1),
+(3, 13, 0, NULL, 1),
+(4, 14, 0, NULL, 1),
+(4, 15, 0, NULL, 1),
+(3, 16, 1, 'Zaštopan WC', 0),
+(4, 17, 0, NULL, 1),
+(3, 18, 1, 'Mrlja na kauču od paradajza', 1),
+(3, 19, 1, 'Rupe od čikova po tepihu', 1),
+(4, 20, 0, NULL, 1);
 
 -- 24. SERVIS_DNEVNI_NALOG
 INSERT INTO servis_dnevni_nalog (zaposlenik_id, soba_id, korisnik_placa, opis, rijeseno) VALUES
 (5, 4, 0, 'Popravak klime', 0),
-(6, 11, 1, 'Slomljena stolica', 1);
+(6, 11, 1, 'Slomljena stolica', 1)
+(6, 5, 0, 'Postavljanje zamke za miševe', 1),
+(6, 2, 1, 'Strgana kvaka od kupaonskih vrata', 1),
+(5, 12, 0, 'Popravak radijatora, ventili ne rade', 0),
+(6, 19, 0, 'Zamjena štekera', 1),
+(5, 13, 0, 'Odštopavanje zahoda', 1),
+(5, 16, 1, 'Popravak vrata od frižidera', 1), 
+(5, 15, 1, 'Rupa u zidu', 1),
+(6, 1, 0, 'Zamjena žarulje u lusteru', 1), 
+(6, 3, 0, 'Zamjena baterija u daljinskom upravljaču', 1),
+(6, 5, 0, 'Pogreb mrtvog miša', 0),
+(5, 11, 1, 'Odštopavanje sudopera u kupaoni', 1),
+(6, 10, 1, 'Popravak  televizora', 0),
+(5, 9, 0, 'Namještanje roleta', 1),
+(5, 17, 0, 'Zamjena lampice u pećnici', 1),
+(6, 18, 1, 'Strgan mehanizam za otvaranje balkona', 0),
+(5, 20, 0, 'Zamjena žarulje u stolnoj lampi', 1);
 
 -- 25. RECENZIJA
 INSERT INTO recenzija (rezervacija_id, ocjena, komentar) VALUES
