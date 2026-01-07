@@ -256,59 +256,59 @@ INSERT INTO tip_sobe (id, naziv, opis, standardni_kapacitet) VALUES
 -- 8. SOBA
 INSERT INTO soba (id, broj, tip_sobe_id, kapacitet_osoba, kat, minibar, balkon, status) VALUES
 -- 1–15: jeftinije (Single / Economy Single / Economy Double)
-(1,101,1,1,1,0,0,'SLOBODNA'),
-(2,102,1,1,1,0,0,'ZAUZETA'),
-(3,103,11,1,1,0,0,'SLOBODNA'),
-(4,104,11,1,1,0,0,'SLOBODNA'),
-(5,105,12,2,1,0,0,'SLOBODNA'),
-(6,106,11,1,1,0,0,'CISCENJE'),
-(7,107,12,2,1,0,0,'SLOBODNA'),
-(8,108,1,1,1,0,0,'SLOBODNA'),
-(9,109,11,1,1,0,0,'SLOBODNA'),
-(10,110,12,2,1,0,0,'ZAUZETA'),
-(11,111,1,1,1,0,0,'SLOBODNA'),
-(12,112,11,1,1,0,0,'SLOBODNA'),
-(13,113,12,2,1,0,0,'SLOBODNA'),
-(14,114,1,1,1,0,0,'SLOBODNA'),
-(15,115,11,1,1,0,0,'IZVAN_FUNKCIJE'),
+(1,101,1,1,1,0,0,'SLOBODNA'), -- SINGLE  
+(2,102,1,1,1,0,0,'ZAUZETA'), -- SINGLE
+(3,103,11,1,1,0,0,'SLOBODNA'), -- ECONOMY SINGLE
+(4,104,11,1,1,0,0,'SLOBODNA'), -- ECONOMY SINGLE
+(5,105,12,2,1,0,0,'SLOBODNA'), -- ECONOMY DOUBLE
+(6,106,11,1,1,0,0,'CISCENJE'), -- ECONOMY SINGLE
+(7,107,12,2,1,0,0,'SLOBODNA'), -- ECONOMY DOUBLE
+(8,108,1,1,1,0,0,'SLOBODNA'), -- SINGLE
+(9,109,11,1,1,0,0,'SLOBODNA'), -- ECONOMY SINGLE
+(10,110,12,2,1,0,0,'ZAUZETA'), -- ECONOMY DOUBLE
+(11,111,1,1,1,0,0,'SLOBODNA'), -- SINGLE
+(12,112,11,1,1,0,0,'SLOBODNA'), -- ECONOMY SINGLE
+(13,113,12,2,1,0,0,'SLOBODNA'), -- ECONOMY DOUBLE
+(14,114,1,1,1,0,0,'SLOBODNA'), -- SINGLE
+(15,115,11,1,1,0,0,'IZVAN_FUNKCIJE'), -- ECONOMY SINGLE
 
 -- 16–32: standard (Double / Twin / Superior / Deluxe / Studio)
-(16,201,2,2,2,1,0,'ZAUZETA'),
-(17,202,2,2,2,1,0,'SLOBODNA'),
-(18,203,3,2,2,1,0,'SLOBODNA'),
-(19,204,3,2,2,1,0,'SLOBODNA'),
+(16,201,2,2,2,1,0,'ZAUZETA'), -- DOUBLE
+(17,202,2,2,2,1,0,'SLOBODNA'), -- DOUBLE
+(18,203,3,2,2,1,0,'SLOBODNA'), -- TWIN
+(19,204,3,2,2,1,0,'SLOBODNA'), -- TWIN
 (20,205,9,2,2,1,1,'SLOBODNA'),   -- Superior Double
 (21,206,10,2,2,1,1,'ZAUZETA'),    -- Superior Twin
 (22,207,8,2,2,1,1,'SLOBODNA'),    -- Deluxe Double
-(23,208,2,2,2,1,0,'CISCENJE'),
-(24,209,3,2,2,1,0,'SLOBODNA'),
+(23,208,2,2,2,1,0,'CISCENJE'), -- DOUBLE
+(24,209,3,2,2,1,0,'SLOBODNA'), -- TWIN
 (25,210,18,2,2,1,1,'SLOBODNA'),   -- Studio
-(26,211,2,2,2,1,0,'SLOBODNA'),
-(27,212,3,2,2,1,0,'ZAUZETA'),
-(28,213,9,2,2,1,1,'SLOBODNA'),
-(29,214,10,2,2,1,1,'SLOBODNA'),
-(30,215,8,2,2,1,1,'SLOBODNA'),
-(31,216,2,2,2,1,0,'SLOBODNA'),
-(32,217,3,2,2,1,0,'IZVAN_FUNKCIJE'),
+(26,211,2,2,2,1,0,'SLOBODNA'), -- DOUBLE
+(27,212,3,2,2,1,0,'ZAUZETA'), -- TWIN
+(28,213,9,2,2,1,1,'SLOBODNA'), -- Superior Double
+(29,214,10,2,2,1,1,'SLOBODNA'), -- Superior Twin
+(30,215,8,2,2,1,1,'SLOBODNA'), -- DELUXE DOUBLE
+(31,216,2,2,2,1,0,'SLOBODNA'), -- DOUBLE
+(32,217,3,2,2,1,0,'IZVAN_FUNKCIJE'), -- TWIN
 
 -- 33–42: veće (Triple / Family / Quadruple / Extra bed)
 (33,301,4,3,3,1,0,'SLOBODNA'),    -- Triple
-(34,302,4,3,3,1,1,'ZAUZETA'),
-(35,303,4,3,3,1,0,'SLOBODNA'),
+(34,302,4,3,3,1,1,'ZAUZETA'), -- Triple
+(35,303,4,3,3,1,0,'SLOBODNA'), -- Triple
 (36,304,5,4,3,1,1,'SLOBODNA'),    -- Family
 (37,305,13,4,3,1,1,'SLOBODNA'),   -- Quadruple
 (38,306,16,3,3,1,0,'SLOBODNA'),   -- Double + Extra Bed
 (39,307,17,3,3,1,0,'ZAUZETA'),    -- Twin + Extra Bed
-(40,308,5,4,3,1,1,'CISCENJE'),
-(41,309,13,4,3,1,1,'SLOBODNA'),
-(42,310,4,3,3,1,0,'SLOBODNA'),
+(40,308,5,4,3,1,1,'CISCENJE'), -- Family
+(41,309,13,4,3,1,1,'SLOBODNA'), -- Quadruple
+(42,310,4,3,3,1,0,'SLOBODNA'), -- Triple
 
 -- 43–47: suite (Suite / Junior / Executive)
 (43,401,6,4,4,1,1,'SLOBODNA'),    -- Suite
 (44,402,7,3,4,1,1,'ZAUZETA'),     -- Junior Suite
-(45,403,6,4,4,1,1,'SLOBODNA'),
+(45,403,6,4,4,1,1,'SLOBODNA'),    -- Suite
 (46,404,19,4,4,1,1,'SLOBODNA'),   -- Executive Suite
-(47,405,7,3,4,1,1,'CISCENJE'),
+(47,405,7,3,4,1,1,'CISCENJE'),    -- Junior Suite
 
 -- 48–50: luksuz ograničeno (2 Honeymoon, 1 Penthouse)
 (48,501,20,2,5,1,1,'SLOBODNA'),   -- Honeymoon Suite
