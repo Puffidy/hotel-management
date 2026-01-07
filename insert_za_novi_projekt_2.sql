@@ -651,26 +651,22 @@ INSERT INTO normativ (usluga_id, artikl_id, kolicina_potrosnje) VALUES
 
 -- 14 Caj menta
 -- 1/4 limuna
-(14,4,1.00),
--- 1 menta
+(14,14,0.25),
+-- 1 čaj menta
 (14,44,1),
-(14,15,1),
-
+-- 1 paket meda
+(14,45,1),
+  
 -- 15 Sok od narance 
 (15,5,1),
-
 -- 16 Voda 0.5l
 (16,39,1.00),
-
 -- 17 Coca Cola 0.25l
 (17,40,1.00),
-
 -- 18 Pivo 0.33l
 (18,41,1.00),
-
 -- 19 Vino/Bijelo 0.2l (vino u litrima)
 (19,28,0.20),
-
 -- 20 Vino/Crno 0.2l (vino u litrima)
 (20,29,0.20);
 
