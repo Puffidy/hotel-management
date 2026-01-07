@@ -397,27 +397,33 @@ INSERT INTO kategorija_usluge (id, naziv) VALUES
 -- 11. USLUGA 
 INSERT INTO usluga (id, kategorija_id, naziv, opis, jedinica_mjere, cijena_trenutna) VALUES
 -- Hrana
-(1, 1,'Dorucak','Skromni dorucak','kom',10.00),
-(2, 1,'Polupansion','Dorucak i vecera','dan',25.00),
-(3, 1,'Pansion','Dorucak, rucak i vecera','dan',40.00),
-(4, 1,'Rucak','Dnevni meni','kom',14.00),
-(5, 1,'Vecera','A la carte','kom',18.00),
-(6, 1,'Sendvic','Sendvic po izboru','kom',6.50),
-(7, 1,'Salata','Sezonska salata','kom',7.00),
-(8, 1,'Burger','Burger 200g','kom',12.00),
-(9, 1,'Pizza Margherita','Klasicna pizza','kom',11.00),
-(10,1,'Pasta Carbonara','Tjestenina','kom',13.00),
-(11,1,'Riblji tanjur','Dnevni ulov','kom',22.00),
-(12,1,'Desert','Kolac dana','kom',5.50),
+-- Dorucak
+(1, 1,'Dorucak/Kontinentalni','2 tost, 1 džem, kava ili čaja i sok.','kom',10.00),
+(2, 1,'Dorucak/Američki','2 jaja, kobasica, 0.06kg slanina, 2 tost, kava ili čaj i sok','kom',10.00),
+-- Rucak
+(3, 1,'Salata/Vegeterijanska','1/4 crveni luk, 0.4kg bijelog graha, 1 avokado, 0.1 rajčica, 0.02kg bosiljka, 1/2 limuna, 0.0225 maslinovog ulja ','kom',7.00),
+(4, 1,'Salata/Piletina','0.4kg piletine, 1/4 crveni luk, 0.3kg feta sir, 0.05l maslinovo ulje, 1/2 limuna, 0.02kg peršina','kom',7.00),
+(5, 1,'Burger','pecivo, 0.5kg junetine, 1 luk, 1 majoneza, 1 kečap, 1/4 rajčice, 0.025 salata ','kom',12.00),
+(6, 1,'Orada s krumpirom','1 orada, 1 mrkva, 0.3kg krumpira, 3 češnjaka, 0.2l bijelog vina, 1 limun, 0.15l maslonovog ulja, 0.4kg peršina','kom',22.00),
+(7, 1,'Pizza Margherita','1 tijesto, 1/2 passate, 0.2kg mozzarelle, 0.03 maslinovog ulja, 0.015 bosiljka ','kom',11.00),
+  
+-- Polupansion
+(8, 1,'Polupansion','Dorucak i rucak','dan',25.00),
+
+-- Ostalo
+(9, 1,'Sendvic/Sir','1 pecivo za sendvic, 0.025 salata, 0.015 maslaca, 0.1kg sira','kom',6.50),
+(10, 1,'Sendvic/Šunka-sir','1 pecivo za sendvic, 0.025 salata, 0.015 maslaca, 0.1kg sira, 0.1kg šunke','kom',6.50),
+(11,1,'Desert','tiramisu','kom',5.50),
 -- Pice
-(13,2,'Kava','Espresso','kom',2.00),
-(14,2,'Cappuccino','Kava s mlijekom','kom',2.50),
-(15,2,'Caj menta','Topli caj','kom',2.20),
-(16,2,'Prirodni sok','0.2l','kom',3.00),
-(17,2,'Voda','0.5l','kom',1.80),
-(18,2,'Coca Cola','0.25l','kom',3.50),
-(19,2,'Pivo','0.33l','kom',4.00),
-(20,2,'Vino casa','0.2l','kom',4.50),
+(12,2,'Kava','Espresso','kom',2.00),
+(13,2,'Cappuccino','Kava s mlijekom','kom',2.50),
+(14,2,'Caj menta','Topli caj','kom',2.20),
+(15,2,'Prirodni sok','0.2l','kom',3.00),
+(16,2,'Voda','0.5l','kom',1.80),
+(17,2,'Coca Cola','0.25l','kom',3.50),
+(18,2,'Pivo','0.33l','kom',4.00),
+(19,2,'Vino/Bijelo','0.2l','kom',4.50),
+(20,2,'Vino/Crno','0.2l','kom',4.50),
 -- Wellness
 (21,3,'Spa','Koristenje spa zone','kom',15.00),
 (22,3,'Masaza 30 min','Relax masaza','kom',25.00),
@@ -433,38 +439,58 @@ INSERT INTO usluga (id, kategorija_id, naziv, opis, jedinica_mjere, cijena_trenu
 
 -- 12. ARTIKL
 INSERT INTO artikl (id, naziv, stanje_zaliha, jedinica_mjere, nabavna_cijena) VALUES
-(1,'Jaja',1000,'kom',0.20),
-(2,'Kruh',50,'kg',1.50),
+(1,'Tost kruh',1000,'kom',1.20),
+(2,'Dzem',1000,'kom',1.50),
 (3,'Kava u zrnu',20,'kg',15.00),
-(4,'Coca Cola boca',200,'kom',1.00),
-(5,'Mlijeko',100,'lit',0.90),
-(6,'Bicikl',10,'kom',200.00),
-(7,'Mljeveno meso',10,'kg',12.00),
-(8,'Slanina',12,'kg',20.00),
-(9,'Limuni',2,'kg',1.00),
-(10,'Caj menta vrecice',25,'kom',0.17),
-(11,'Plasma keksi',15,'kom',2.50),
-(12,'Riza',10,'kg',1.00),
-(13,'Sir gauda',1,'kg',10.15),
-(14,'Srdele',9,'kg',20.00),
-(15,'Hobotnica',10,'kg',30.00),
-(16,'Parmezan ribani',2,'kg',72.00),
-(17,'Pjenusac Freixenet',6,'kom',8.00),
-(18,'Vino crno',3,'kom',8.00),
-(19,'Vino bijelo',7,'kom',8.00),
-(20,'Drniski prsut',5,'kg',32.00),
-(21,'Brasno',25,'kg',0.80),
-(22,'Secer',20,'kg',0.90),
-(23,'Sol',10,'kg',0.40),
-(24,'Maslinovo ulje',15,'lit',6.50),
-(25,'Piletina file',20,'kg',7.50),
-(26,'Tjestenina',30,'kg',1.30),
-(27,'Rajcica',25,'kg',2.00),
-(28,'Sir mozzarella',10,'kg',6.00),
-(29,'Voda boca 0.5l',200,'kom',0.25),
-(30,'Papirnati ubrusi',50,'pak',1.20),
-(31,'Pivo boca 0.33l',120,'kom',1.10),
-(32,'Sok naranca 1l',30,'kom',1.80);
+(4,'Caj menta vrecice',1000,'kom',0.10),
+(5,'Sok naranca 1l',1000,'kom',1.80),
+
+(6,'Jaja',1000,'kom',0.20),
+(7,'Kobasica',250,'kom',0.5),
+(8,'Slanina',20,'kg',12.00),
+
+(9,'Crveni luk',30,'kom',1.20),
+(10,'Bijeli grah',30,'kg',2.00),
+(11,'Avokado',80,'kom',1.30),
+(12,'Rajcica',40,'kg',2.00),
+(13,'Bosiljak',5,'kg',18.00),
+(14,'Limun',120,'kom',0.40),
+(15,'Maslinovo ulje',30,'l',6.50),
+
+(16,'Piletina file',30,'kg',7.50),
+(17,'Feta sir',20,'kg',9.00),
+(18,'Persin',10,'kg',12.00),
+
+(19,'Junetina mljevena',30,'kg',12.00),
+(20,'Pecivo burger',200,'kom',0.30),
+(21,'Majoneza',1000,'kom',2.20),
+(22,'Kecap',1000,'kom',1.80),
+(23,'Zelena salata',5,'kg',2.50),
+
+(24,'Orada',40,'kom',6.00),
+(25,'Mrkva',50,'kg',1.00),
+(26,'Krumpir',80,'kg',0.80),
+(27,'Cesnjak',15,'kom',6.00),
+(28,'Bijelo vino',250,'l',4.50),
+(29,'Crno vino',250,'l',4.50),
+
+(30,'Tijesto za pizzu',120,'kom',0.60),
+(31,'Passata',80,'kom',1.10),
+(32,'Sir mozzarella',25,'kg',6.00),
+
+(33,'Pecivo za sendvic',250,'kom',0.25),
+(34,'Maslac',40,'kg',6.50),
+(35,'Sir Gauda',30,'kg',7.50),
+(36,'Sunka',25,'kg',9.50),
+
+(37,'Tiramisu',80,'kom',1.80),
+
+(38,'Mlijeko',120,'l',0.90),
+(39,'Voda boca 0.5l',300,'kom',0.25),
+(40,'Coca Cola 0.25l',300,'kom',0.50),
+(41,'Pivo boca 0.33l',200,'kom',1.10),
+(42,'Vino casa 0.75l',60,'kom',4.00),
+
 
 -- 13. NORMATIV
 INSERT INTO normativ (usluga_id, artikl_id, kolicina_potrosnje) VALUES
