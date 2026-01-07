@@ -183,7 +183,7 @@ CREATE TABLE restoran_stol (
 
 -- 15. PROMOCIJA 
 CREATE TABLE promocija (
-    id INT AUTO_INCREMENT PRIMARY KEY,
+    id INT  PRIMARY KEY,
     naziv VARCHAR(50) NOT NULL, 
     kod_kupona VARCHAR(20) UNIQUE,
     popust_postotak DECIMAL(5,2),
