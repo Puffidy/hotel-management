@@ -706,7 +706,7 @@ INSERT INTO restoran_stol (id, broj_stola, broj_mjesta, lokacija) VALUES
 (30,30,4,'VIP');
 
 /*
--- 5. REZERVACIJE I MARKETING
+-- 5. REZERVACIJE I MARKETING i RAČUN
 */
 
 -- 15. PROMOCIJA 
@@ -719,33 +719,21 @@ INSERT INTO promocija (id, naziv, kod_kupona, popust_postotak, datum_pocetka, da
 -- 16. REZERVACIJA 
 INSERT INTO rezervacija (id, gost_nositelj_id, zaposlenik_id, soba_id, promocija_id, datum_rezervacije, pocetak_datum, kraj_datum, vrijeme_check_in, vrijeme_check_out, broj_osoba, status, napomena) VALUES
 -- ZAVRSENE (Imaju check-in/out)
-(1,1,1,3,1, '2024-01-05', '2024-01-10', '2024-01-12', '2024-01-10 15:00:00', '2024-01-12 10:00:00', 1, 'ZAVRSENA', 'Poslovni boravak'),
-(2,2,1,5,NULL, '2024-02-01', '2024-02-15', '2024-02-18', '2024-02-15 14:00:00', '2024-02-18 11:00:00', 2, 'ZAVRSENA', NULL),
-(3,3,2,11,NULL,'2024-03-03', '2024-03-20', '2024-03-25', '2024-03-20 16:00:00', '2024-03-25 09:00:00', 2, 'ZAVRSENA', 'Godišnji'),
--- POTVRDJENE (Nemaju check-in/out još)
-(13,13,1,5,2,'2025-01-15', '2025-06-01', '2025-06-05', NULL, NULL, 2, 'POTVRDJENA', NULL),
-(14,14,1,9,NULL,'2025-02-10', '2025-07-20', '2025-07-25', NULL, NULL, 1, 'POTVRDJENA', 'Tiha soba'),
--- U TIJEKU (Imaju check-in, nemaju check-out)
-(16,16,1,6,NULL,'2025-04-01', '2025-12-05', '2025-12-10', '2025-12-05 13:00:00', NULL, 2, 'U_TIJEKU', NULL);
 
 -- 17. RESTORAN_NARUDZBA 
 INSERT INTO restoran_narudzba (zaposlenik_id, restoran_stol_id, rezervacija_smjestaj_id, status) VALUES
-(9, 1, 1, 'NAPLACENA'), -- Gost iz rez 1 je jeo
-(9, 3, NULL, 'OTVORENA'); -- Gost s ceste
+
 
 -- 18. RESTORAN_STAVKA 
 INSERT INTO restoran_stavka (narudzba_id, usluga_id, kolicina, cijena_u_trenutku) VALUES
-(1, 1, 2, 10.00), -- 2 Doručka
-(1, 8, 2, 2.00);  -- 2 Kave
 
 -- 19. REZERVACIJA_GOST 
 INSERT INTO rezervacija_gost (rezervacija_id, gost_id) VALUES
-(2, 29), (3, 12), (13, 17);
+
 
 -- 20. LOG_REZERVACIJE 
 INSERT INTO log_rezervacije (rezervacija_id, stari_status, novi_status, korisnik_db) VALUES
-(1, 'POTVRDJENA', 'U_TIJEKU', 'iva.ivic'),
-(1, 'U_TIJEKU', 'ZAVRSENA', 'luka.lukic');
+
 
 /*
 -- 6. FINANCIJE
@@ -753,17 +741,11 @@ INSERT INTO log_rezervacije (rezervacija_id, stari_status, novi_status, korisnik
 
 -- 21. RACUN
 INSERT INTO racun (id, rezervacija_id, datum_izdavanja, nacin_placanja, iznos_ukupno) VALUES
-(1,1,'2024-01-12 10:00:00','KARTICA',220.00),
-(2,2,'2024-02-18 12:00:00','GOTOVINA',450.00),
-(3,3,'2024-03-25 09:30:00','VIRMANSKI',800.00);
+
 
 -- 22. STAVKA_RACUNA
 INSERT INTO stavka_racuna (racun_id, usluga_id, tip_stavke, opis, kolicina, cijena_jedinicna, iznos_ukupno) VALUES
-(1,NULL,'NOCENJE','Nocenje Single',2,50.00,100.00),
-(1,1,'USLUGA','Dorucak',2,10.00,20.00), 
-(1,NULL,'BORAVISNA_PRISTOJBA','Taksa',2,2.00,4.00),
-(2,NULL,'NOCENJE','Nocenje Double',3,80.00,240.00),
-(2,4,'USLUGA','Spa Tretman',1,15.00,15.00);
+
 
 /*
 -- 7. ODRŽAVANJE I FEEDBACK
@@ -771,47 +753,11 @@ INSERT INTO stavka_racuna (racun_id, usluga_id, tip_stavke, opis, kolicina, cije
 
 -- 23. CISCENJE_DNEVNI_NALOG
 INSERT INTO ciscenje_dnevni_nalog (zaposlenik_id, rezervacija_id, prijavljena_steta, opis_stete, obavljeno) VALUES
-(3, 1, 0, NULL, 1),
-(4, 2, 1, 'Mrlja na tepihu', 1),
-(4, 3, 0, NULL, 1),
-(3, 4, 0, NULL, 1),
-(3, 5, 1, 'Strgana čaša za vino', 1),
-(3, 6, 0, NULL, 1),
-(4, 7, 1, 'Poderali plahtu', 1),
-(3, 8, 1, 'Zaštopan umivaonik', 0),
-(3, 9, 0, NULL, 1),
-(4, 10, 0, NULL, 1),
-(4, 11, 0, NULL, 1),
-(4, 12, 1, 'Rupe u fahu', 1),
-(3, 13, 0, NULL, 1),
-(4, 14, 0, NULL, 1),
-(4, 15, 0, NULL, 1),
-(3, 16, 1, 'Zaštopan WC', 0),
-(4, 17, 0, NULL, 1),
-(3, 18, 1, 'Mrlja na kauču od paradajza', 1),
-(3, 19, 1, 'Rupe od čikova po tepihu', 1),
-(4, 20, 0, NULL, 1);
+
 
 -- 24. SERVIS_DNEVNI_NALOG
 INSERT INTO servis_dnevni_nalog (zaposlenik_id, soba_id, korisnik_placa, opis, rijeseno) VALUES
-(5, 4, 0, 'Popravak klime', 0),
-(6, 11, 1, 'Slomljena stolica', 1)
-(6, 5, 0, 'Postavljanje zamke za miševe', 1),
-(6, 2, 1, 'Strgana kvaka od kupaonskih vrata', 1),
-(5, 12, 0, 'Popravak radijatora, ventili ne rade', 0),
-(6, 19, 0, 'Zamjena štekera', 1),
-(5, 13, 0, 'Odštopavanje zahoda', 1),
-(5, 16, 1, 'Popravak vrata od frižidera', 1), 
-(5, 15, 1, 'Rupa u zidu', 1),
-(6, 1, 0, 'Zamjena žarulje u lusteru', 1), 
-(6, 3, 0, 'Zamjena baterija u daljinskom upravljaču', 1),
-(6, 5, 0, 'Pogreb mrtvog miša', 0),
-(5, 11, 1, 'Odštopavanje sudopera u kupaoni', 1),
-(6, 10, 1, 'Popravak  televizora', 0),
-(5, 9, 0, 'Namještanje roleta', 1),
-(5, 17, 0, 'Zamjena lampice u pećnici', 1),
-(6, 18, 1, 'Strgan mehanizam za otvaranje balkona', 0),
-(5, 20, 0, 'Zamjena žarulje u stolnoj lampi', 1);
+
 
 -- 25. RECENZIJA
 INSERT INTO recenzija (rezervacija_id, ocjena, komentar) VALUES
