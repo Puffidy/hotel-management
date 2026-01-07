@@ -403,14 +403,14 @@ INSERT INTO usluga (id, kategorija_id, naziv, opis, jedinica_mjere, cijena_trenu
 -- Rucak
 (3, 1,'Salata/Vegeterijanska','1/4 crveni luk, 0.4kg bijelog graha, 1 avokado, 0.1 rajčica, 0.02kg bosiljka, 1/2 limuna, 0.0225 maslinovog ulja ','kom',7.00),
 (4, 1,'Salata/Piletina','0.4kg piletine, 1/4 crveni luk, 0.3kg feta sir, 0.05l maslinovo ulje, 1/2 limuna, 0.02kg peršina','kom',7.00),
-(5, 1,'Burger','pecivo, 0.5kg junetine, 1 luk, 1 majoneza, 1 kečap, 1/4 rajčice, 0.025 salata ','kom',12.00),
+(5, 1,'Burger','pecivo, 0.25kg junetine, 1 luk, 1 majoneza, 1 kečap, 1/4 rajčice, 0.025 salata ','kom',12.00),
 (6, 1,'Orada s krumpirom','1 orada, 1 mrkva, 0.3kg krumpira, 3 češnjaka, 0.2l bijelog vina, 1 limun, 0.15l maslonovog ulja, 0.4kg peršina','kom',22.00),
 (7, 1,'Pizza Margherita','1 tijesto, 1/2 passate, 0.2kg mozzarelle, 0.03 maslinovog ulja, 0.015 bosiljka ','kom',11.00),
   
 -- Polupansion
 (8, 1,'Polupansion','Dorucak i rucak','dan',25.00),
 
--- Ostalo
+-- Ostalo/hrana
 (9, 1,'Sendvic/Sir','1 pecivo za sendvic, 0.025 salata, 0.015 maslaca, 0.1kg sira','kom',6.50),
 (10, 1,'Sendvic/Šunka-sir','1 pecivo za sendvic, 0.025 salata, 0.015 maslaca, 0.1kg sira, 0.1kg šunke','kom',6.50),
 (11,1,'Desert','tiramisu','kom',5.50),
@@ -418,7 +418,7 @@ INSERT INTO usluga (id, kategorija_id, naziv, opis, jedinica_mjere, cijena_trenu
 (12,2,'Kava','Espresso','kom',2.00),
 (13,2,'Cappuccino','Kava s mlijekom','kom',2.50),
 (14,2,'Caj menta','Topli caj','kom',2.20),
-(15,2,'Prirodni sok','0.2l','kom',3.00),
+(15,2,'Sok od narance','0.25l','kom',3.00),
 (16,2,'Voda','0.5l','kom',1.80),
 (17,2,'Coca Cola','0.25l','kom',3.50),
 (18,2,'Pivo','0.33l','kom',4.00),
@@ -443,7 +443,7 @@ INSERT INTO artikl (id, naziv, stanje_zaliha, jedinica_mjere, nabavna_cijena) VA
 (2,'Dzem',1000,'kom',1.50),
 (3,'Kava u zrnu',20,'kg',15.00),
 (4,'Caj menta vrecice',1000,'kom',0.10),
-(5,'Sok naranca',1000,'l',1.80),
+(5,'Sok naranca',1000,'kom',1.80),
 
 (6,'Jaja',1000,'kom',0.20),
 (7,'Kobasica',250,'kom',0.5),
@@ -463,8 +463,8 @@ INSERT INTO artikl (id, naziv, stanje_zaliha, jedinica_mjere, nabavna_cijena) VA
 
 (19,'Junetina mljevena',30,'kg',12.00),
 (20,'Pecivo burger',200,'kom',0.30),
-(21,'Majoneza',1000,'kom',2.20),
-(22,'Kecap',1000,'kom',1.80),
+(21,'Majoneza-paket',1000,'kom',0.1),
+(22,'Kecap-paket',1000,'kom',0.1),
 (23,'Zelena salata',5,'kg',2.50),
 
 (24,'Orada',40,'kom',6.00),
@@ -479,7 +479,7 @@ INSERT INTO artikl (id, naziv, stanje_zaliha, jedinica_mjere, nabavna_cijena) VA
 (32,'Sir mozzarella',25,'kg',6.00),
 
 (33,'Pecivo za sendvic',250,'kom',0.25),
-(34,'Maslac',40,'kg',6.50),
+(34,'Maslac-paket',1000,'kom',0.1),
 (35,'Sir Gauda',30,'kg',7.50),
 (36,'Sunka',25,'kg',9.50),
 
@@ -491,6 +491,9 @@ INSERT INTO artikl (id, naziv, stanje_zaliha, jedinica_mjere, nabavna_cijena) VA
 (41,'Pivo boca 0.33l',200,'kom',1.10),
 (42,'Vino/Bijelo',60,'l',4.00),
 (43,'Vino/Crno',60,'l',4.00),
+(44,'Čaj-Menta',1000,'kom',0.1),
+(45,'Med-paket',1000,'kom',0.1);
+
 
 
 -- 13. NORMATIV
@@ -536,6 +539,73 @@ INSERT INTO normativ (usluga_id, artikl_id, kolicina_potrosnje) VALUES
 (3,15,0.0225),
 
 -- 4 Salata/Piletina
+-- 400g piletine
+(4,16,0.40),
+-- 1/4 crvenog luka
+(4,9,0.25),
+-- 300g feta sir
+(4,17,0.30),
+-- 0.05l maslinovog ulja
+(4,15,0.05),
+-- pola limnuna
+(4,14,0.50),
+-- 20 grama peršina
+(4,18,0.02),
+
+-- 5 Burger
+-- 1 pecivo za burger
+(5,20,1.00),
+-- 250g junetine
+(5,19,0.25),
+-- 1 crveni luk
+(5,9,1.00),
+-- 1 paketić majoneze
+(5,21,1),
+-- 1 paketić kečapa
+(5,22,1),
+-- 50grama rajčice
+(5,12,0.05),
+-- dva lista salate
+(5,23,0.025),
+
+-- 6 Orada s krumpirom (persin smanjio na 0.04kg jer 0.4kg je previše)
+-- 1 orada
+(6,24,1.00),
+-- 100 grama mrkve
+(6,25,0.10),
+-- 300 grama krumpira
+(6,26,0.30),
+-- 3 češnjaka
+(6,27,3.00),
+-- 2dl bijelog vina
+(6,28,0.20),
+-- 1 limun
+(6,14,1.00),
+-- 1.5dl maslinovog ulja
+(6,15,0.15),
+-- 40 grama peršina
+(6,18,0.04),
+
+-- 7 Pizza Margherita
+-- 1 tijesto za pizzu
+(7,30,1.00),
+-- 1/2 passate
+(7,31,0.50),
+-- 200 grama mozzarelle
+(7,32,0.20),
+-- 30ml maslinovog ulja
+(7,15,0.03),
+-- 15 grama bosiljka
+(7,13,0.015),
+
+-- 8 Polupansion (Dorucak + rucak) - ovo treba još razradit (riba nije uključena u polupansion)
+--Kontinentalni
+(8,1,2.00),
+(8,2,1.00),
+(8,3,0.01),
+(8,5,0.20),
+-- 
+-- 4 Salata/Piletina
 (4,16,0.40),
 (4,9,0.25),
 (4,17,0.30),
@@ -543,69 +613,51 @@ INSERT INTO normativ (usluga_id, artikl_id, kolicina_potrosnje) VALUES
 (4,14,0.50),
 (4,18,0.02),
 
--- 5 Burger
-(5,20,1.00),
-(5,19,0.50),
-(5,9,1.00),
-(5,21,0.02),
-(5,22,0.02),
-(5,12,0.05),
-(5,23,0.025),
-
--- 6 Orada s krumpirom (persin smanjio na 0.04kg jer 0.4kg je previše)
-(6,24,1.00),
-(6,25,0.10),
-(6,26,0.30),
-(6,27,3.00),
-(6,28,0.20),
-(6,14,1.00),
-(6,15,0.15),
-(6,18,0.04),
-
--- 7 Pizza Margherita
-(7,30,1.00),
-(7,31,0.50),
-(7,32,0.20),
-(7,15,0.03),
-(7,13,0.015),
-
--- 8 Polupansion (Dorucak + rucak) - pojednostavljeno (osnovne stavke)
-(8,1,2.00),
-(8,2,1.00),
-(8,3,0.01),
-(8,5,0.20),
-(8,16,0.20),
-(8,12,0.10),
-(8,15,0.02),
 
 -- 9 Sendvic/Sir
+-- Pecivo za sendvic 
 (9,33,1.00),
+-- dvije fete salate
 (9,23,0.025),
-(9,34,0.015),
+-- 1 paketić maslaca
+(9,34,1),
+-- 100 grama sira gaude
 (9,35,0.10),
 
 -- 10 Sendvic/Sunka-sir
+-- Pecivo za sendvic
 (10,33,1.00),
+-- Dvije fete salate
 (10,23,0.025),
-(10,34,0.015),
+-- Jedan paketić maslaca
+(10,34,1),
+-- 100 grama sira gauda
 (10,35,0.10),
+-- 100 grama šunke
 (10,36,0.10),
 
 -- 11 Desert (tiramisu)
 (11,37,1.00),
 
 -- 12 Kava (espresso)
+-- 10 grama kave
 (12,3,0.01),
 
 -- 13 Cappuccino (kava + mlijeko)
+-- 10 grama kave
 (13,3,0.01),
+-- 15dl mlijeka
 (13,38,0.15),
 
 -- 14 Caj menta
+-- 1/4 limuna
 (14,4,1.00),
+-- 1 menta
+(14,44,1),
+(14,15,1),
 
--- 15 Prirodni sok 0.2l (iz boce 1l)
-(15,5,0.20),
+-- 15 Sok od narance 
+(15,5,1),
 
 -- 16 Voda 0.5l
 (16,39,1.00),
@@ -621,7 +673,7 @@ INSERT INTO normativ (usluga_id, artikl_id, kolicina_potrosnje) VALUES
 
 -- 20 Vino/Crno 0.2l (vino u litrima)
 (20,29,0.20);
-;
+
 
 
 -- 14. RESTORAN_STOL 
