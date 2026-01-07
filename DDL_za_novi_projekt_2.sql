@@ -264,7 +264,8 @@ CREATE TABLE log_rezervacije (
     stari_status VARCHAR(20),
     novi_status VARCHAR(20),
     vrijeme_promjene TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    korisnik_db VARCHAR(50)
+    korisnik_db VARCHAR(50),
+	CONSTRAINT fk_rezervacija_id FOREIGN KEY (rezervacija_id) REFERENCES rezervacija(id)
 );
 
 /*
