@@ -443,7 +443,7 @@ INSERT INTO artikl (id, naziv, stanje_zaliha, jedinica_mjere, nabavna_cijena) VA
 (2,'Dzem',1000,'kom',1.50),
 (3,'Kava u zrnu',20,'kg',15.00),
 (4,'Caj menta vrecice',1000,'kom',0.10),
-(5,'Sok naranca 1l',1000,'kom',1.80),
+(5,'Sok naranca',1000,'l',1.80),
 
 (6,'Jaja',1000,'kom',0.20),
 (7,'Kobasica',250,'kom',0.5),
@@ -470,7 +470,7 @@ INSERT INTO artikl (id, naziv, stanje_zaliha, jedinica_mjere, nabavna_cijena) VA
 (24,'Orada',40,'kom',6.00),
 (25,'Mrkva',50,'kg',1.00),
 (26,'Krumpir',80,'kg',0.80),
-(27,'Cesnjak',15,'kom',6.00),
+(27,'Cesnjak',15,'kom',0.3),
 (28,'Bijelo vino',250,'l',4.50),
 (29,'Crno vino',250,'l',4.50),
 
@@ -489,82 +489,139 @@ INSERT INTO artikl (id, naziv, stanje_zaliha, jedinica_mjere, nabavna_cijena) VA
 (39,'Voda boca 0.5l',300,'kom',0.25),
 (40,'Coca Cola 0.25l',300,'kom',0.50),
 (41,'Pivo boca 0.33l',200,'kom',1.10),
-(42,'Vino casa 0.75l',60,'kom',4.00),
+(42,'Vino/Bijelo',60,'l',4.00),
+(43,'Vino/Crno',60,'l',4.00),
 
 
 -- 13. NORMATIV
 INSERT INTO normativ (usluga_id, artikl_id, kolicina_potrosnje) VALUES
--- Dorucak (1)
+-- 1 Dorucak/Kontinentalni: 2 tost, dzem, kava ili caj, sok (aproksimacija: kava + caj + sok)
+-- 2 tosta
 (1,1,2.00),
-(1,2,0.20),
+-- 1 džem
+(1,2,1.00),
+-- 1 espresso
+(1,3,0.01),
+-- 1 sok od narance
 (1,5,0.20),
-(1,13,0.03),
--- Polupansion (2) - pojednostavljeno
-(2,1,1.00),
-(2,2,0.10),
-(2,5,0.10),
--- Pansion (3) - dodano (da ne fali)
-(3,1,2.00),
-(3,2,0.20),
-(3,5,0.20),
-(3,25,0.25),
-(3,27,0.20),
-(3,7,0.20),
--- Rucak (4)
-(4,25,0.25),
-(4,27,0.20),
-(4,24,0.01),
--- Vecera (5)
-(5,7,0.25),
-(5,27,0.25),
-(5,24,0.01),
--- Sendvic (6)
-(6,2,0.15),
-(6,13,0.05),
-(6,8,0.03),
--- Salata (7)
-(7,27,0.20),
-(7,24,0.01),
-(7,23,0.01),
--- Burger (8)
-(8,7,0.20),
-(8,2,0.10),
-(8,27,0.10),
--- Pizza Margherita (9)
-(9,21,0.20),
-(9,27,0.15),
-(9,28,0.12),
-(9,24,0.01),
--- Pasta Carbonara (10)
-(10,26,0.15),
-(10,5,0.05),
-(10,8,0.03),
-(10,16,0.01),
--- Riblji tanjur (11)
-(11,14,0.30),
-(11,24,0.01),
-(11,9,0.02),
--- Desert (12)
-(12,21,0.10),
-(12,22,0.05),
-(12,5,0.05),
--- Kava (13)
+
+-- 2 Dorucak/Americki: 2 jaja, kobasica, 0.06kg slanina, 2 tost, kava/caj, sok
+-- 2 jaja
+(2,6,2.00),
+-- 1 kobasica
+(2,7,1.00),
+-- 2 kriške slanine
+(2,8,0.06),
+-- 2 tosta
+(2,1,2.00),
+-- 1 espresso
+(2,3,0.01),
+-- 1 sok od narance
+(2,5,0.20),
+
+-- 3 Salata/Vegeterijanska
+-- 1/4 crvenog luka
+(3,9,0.25),
+-- 400 g graha
+(3,10,0.40),
+-- 1 avokado
+(3,11,1.00),
+-- 100 g rajčica
+(3,12,0.10),
+-- 20 grama bosiljka
+(3,13,0.02),
+-- pola limuna
+(3,14,0.50),
+-- dvije žlicice maslinovog ulja
+(3,15,0.0225),
+
+-- 4 Salata/Piletina
+(4,16,0.40),
+(4,9,0.25),
+(4,17,0.30),
+(4,15,0.05),
+(4,14,0.50),
+(4,18,0.02),
+
+-- 5 Burger
+(5,20,1.00),
+(5,19,0.50),
+(5,9,1.00),
+(5,21,0.02),
+(5,22,0.02),
+(5,12,0.05),
+(5,23,0.025),
+
+-- 6 Orada s krumpirom (persin smanjio na 0.04kg jer 0.4kg je previše)
+(6,24,1.00),
+(6,25,0.10),
+(6,26,0.30),
+(6,27,3.00),
+(6,28,0.20),
+(6,14,1.00),
+(6,15,0.15),
+(6,18,0.04),
+
+-- 7 Pizza Margherita
+(7,30,1.00),
+(7,31,0.50),
+(7,32,0.20),
+(7,15,0.03),
+(7,13,0.015),
+
+-- 8 Polupansion (Dorucak + rucak) - pojednostavljeno (osnovne stavke)
+(8,1,2.00),
+(8,2,1.00),
+(8,3,0.01),
+(8,5,0.20),
+(8,16,0.20),
+(8,12,0.10),
+(8,15,0.02),
+
+-- 9 Sendvic/Sir
+(9,33,1.00),
+(9,23,0.025),
+(9,34,0.015),
+(9,35,0.10),
+
+-- 10 Sendvic/Sunka-sir
+(10,33,1.00),
+(10,23,0.025),
+(10,34,0.015),
+(10,35,0.10),
+(10,36,0.10),
+
+-- 11 Desert (tiramisu)
+(11,37,1.00),
+
+-- 12 Kava (espresso)
+(12,3,0.01),
+
+-- 13 Cappuccino (kava + mlijeko)
 (13,3,0.01),
--- Cappuccino (14)
-(14,3,0.01),
-(14,5,0.15),
--- Caj menta (15)
-(15,10,1.00),
--- Prirodni sok 0.2l (16) - dodano
-(16,32,0.20),
--- Voda 0.5l (17)
-(17,29,1.00),
--- Coca Cola 0.25l (18)
-(18,4,1.00),
--- Pivo 0.33l (19) - dodano
-(19,31,1.00),
--- Vino casa 0.2l (20) - pojednostavljeno
-(20,19,0.20);
+(13,38,0.15),
+
+-- 14 Caj menta
+(14,4,1.00),
+
+-- 15 Prirodni sok 0.2l (iz boce 1l)
+(15,5,0.20),
+
+-- 16 Voda 0.5l
+(16,39,1.00),
+
+-- 17 Coca Cola 0.25l
+(17,40,1.00),
+
+-- 18 Pivo 0.33l
+(18,41,1.00),
+
+-- 19 Vino/Bijelo 0.2l (vino u litrima)
+(19,28,0.20),
+
+-- 20 Vino/Crno 0.2l (vino u litrima)
+(20,29,0.20);
+;
 
 
 -- 14. RESTORAN_STOL 
