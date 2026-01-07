@@ -27,6 +27,18 @@ CREATE TABLE vrsta_dokumenta (
     naziv VARCHAR(50) NOT NULL
 );
 
+
+-- status gosta
+CREATE TABLE status_gosta (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+    naziv VARCHAR(50) NOT NULL UNIQUE,
+    donji_prag_potrosnje DECIMAL (12, 2) NOT NULL DEFAULT 0.00,
+    opis TEXT
+);
+
+INSERT INTO status_gosta (naziv, donji_prag_potrosnje, opis) VALUES ('Osnovni', 0.00, 'Pocetni satus');
+
+
 /*
 -- 2. ORGANIZACIJA I LJUDI
 */
@@ -77,15 +89,7 @@ CREATE TABLE gost (
     INDEX idx_gost_potrosnja (ukupna_potrosnja_cache DESC)
 );
 
--- status gosta
-CREATE TABLE status_gosta (
-	id INT AUTO_INCREMENT PRIMARY KEY,
-    naziv VARCHAR(50) NOT NULL UNIQUE,
-    donji_prag_potrosnje DECIMAL (12, 2) NOT NULL DEFAULT 0.00,
-    opis TEXT
-);
 
-INSERT INTO status_gosta (naziv, donji_prag_potrosnje, opis) VALUES ('Osnovni', 0.00, 'Pocetni satus');
 
 /*
 -- 3. SMJEŠTAJNI KAPACITETI
