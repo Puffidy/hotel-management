@@ -163,7 +163,7 @@ CREATE TABLE artikl (
 CREATE TABLE normativ (
     usluga_id INT NOT NULL,
     artikl_id INT NOT NULL,
-    kolicina_potrosnje DECIMAL(10,2) NOT NULL,
+    kolicina_potrosnje DECIMAL(10,4) NOT NULL,
     PRIMARY KEY (usluga_id, artikl_id),
     CONSTRAINT fk_norm_usluga FOREIGN KEY (usluga_id) REFERENCES usluga(id),
     CONSTRAINT fk_norm_artikl FOREIGN KEY (artikl_id) REFERENCES artikl(id)
