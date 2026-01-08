@@ -80,6 +80,7 @@ CREATE TABLE gost (
     drzavljanstvo_id INT NOT NULL,
     status_id INT NOT NULL DEFAULT 1,
     ukupna_potrosnja_cache DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+	vip_status BOOLEAN DEFAULT 0,
     
     CONSTRAINT fk_gost_vrsta_dok FOREIGN KEY (vrsta_dokumenta_id) REFERENCES vrsta_dokumenta(id),
     CONSTRAINT fk_gost_drzavljanstvo FOREIGN KEY (drzavljanstvo_id) REFERENCES drzava(id),
