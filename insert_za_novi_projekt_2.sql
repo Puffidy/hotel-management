@@ -772,42 +772,263 @@ VALUES
 
 
 -- 17. RESTORAN_NARUDZBA 
-INSERT INTO restoran_narudzba (zaposlenik_id, restoran_stol_id, rezervacija_smjestaj_id, status) VALUES
+INSERT INTO restoran_narudzba (id, zaposlenik_id, restoran_stol_id, rezervacija_smjestaj_id, datum_otvaranja, datum_zatvaranja, status) VALUES
+-- Plaćene narudžbe za "ZAVRSENE" rezervacije (1-12)
+(1, 25, 1, 1,  '2026-01-10 19:33:00', '2026-01-10 21:07:00', 'PLACENO'),
+(2, 27, 5, 2,  '2026-01-19 09:04:00', '2026-01-19 10:17:00', 'PLACENO'),
+(3, 28, 12, 3, '2026-02-11 20:03:00', '2026-02-11 22:38:00', 'PLACENO'), 
+(4, 25, 26, 4, '2026-02-21 13:12:00', '2026-02-21 14:41:00', 'PLACENO'),
+(5, 29, 2, 5,  '2026-03-11 18:08:00', '2026-03-11 19:14:00', 'PLACENO'),
+(6, 30, 3, 6,  '2026-03-19 08:02:00', '2026-03-19 09:06:00', 'PLACENO'),
+(7, 27, 8, 7,  '2026-04-12 20:11:00', '2026-04-12 21:43:00', 'PLACENO'),
+(8, 26, 10, 9, '2026-05-12 14:06:00', '2026-05-12 15:37:00', 'PLACENO'),
+(9, 25, 15, 12, '2026-06-21 20:09:00', '2026-06-21 22:13:00', 'PLACENO'),
+
+-- Narudžbe za aktivne goste koji su "U_TIJEKU" -  stats "OTVORENA"
+(10, 28, 20, 16, '2026-12-20 19:07:00', NULL, 'OTVORENA'), 
+(11, 29, 21, 17, '2026-12-20 20:18:00', NULL, 'OTVORENA'),
+
+-- Narudžbe bez rezervacije - ne gosti 
+(12, 30, 1, NULL, '2026-05-01 12:13:00', '2026-05-01 13:02:00', 'PLACENO'),
+(13, 25, 4, NULL, '2026-06-01 19:16:00', '2026-06-01 20:22:00', 'PLACENO'),
+
+-- Stornirana narudžba
+(14, 27, 8, 8, '2026-04-23 20:04:00', '2026-04-23 20:11:00', 'STORNIRANO');
+
 
 
 -- 18. RESTORAN_STAVKA 
-INSERT INTO restoran_stavka (narudzba_id, usluga_id, kolicina, cijena_u_trenutku) VALUES
+
+INSERT INTO restoran_stavka (narudzba_id, usluga_id, kolicina, cijena_u_trenutku, status_pripreme) VALUES
+-- Prva narudžba
+(1, 6, 1, 22.00, 'POSLUZENO'), -- Orada
+(1, 19, 2, 4.50, 'POSLUZENO'), -- Vino bijelo
+
+-- Druga narudžba
+(2, 2, 1, 10.00, 'POSLUZENO'), -- Americki dorucak
+(2, 13, 1, 2.50, 'POSLUZENO'), -- Cappuccino
+
+-- Treća narudžba
+(3, 5, 2, 12.00, 'POSLUZENO'), -- Burgeri
+(3, 18, 4, 4.00, 'POSLUZENO'), -- Pivo
+(3, 11, 2, 5.50, 'POSLUZENO'), -- Desert
+
+-- Četvrta narudžba
+(4, 3, 2, 7.00, 'POSLUZENO'), -- Salata veganska
+(4, 16, 2, 1.80, 'POSLUZENO'), -- Voda
+
+-- Peta narudžba
+(5, 7, 2, 11.00, 'POSLUZENO'), -- Pizza
+
+-- Šesta narudžba
+(6, 1, 1, 10.00, 'POSLUZENO'), -- Kontinentalni
+
+-- Sedma narudžba
+(7, 6, 2, 22.00, 'POSLUZENO'), -- Orada
+(7, 20, 4, 4.50, 'POSLUZENO'), -- Vino crno
+
+-- Osma narudžba
+(8, 4, 3, 7.00, 'POSLUZENO'), -- Salata piletina
+(8, 17, 3, 3.50, 'POSLUZENO'), -- Cola
+
+-- Deveta narudžba
+(9, 5, 2, 12.00, 'POSLUZENO'), -- Burger
+
+-- Deseta narudžba
+(10, 19, 1, 4.50, 'POSLUZENO'), -- Vino bijelo
+(10, 11, 1, 5.50, 'NARUCENO'), -- Desert
+
+-- Jedanaesta narudžba
+(11, 7, 2, 11.00, 'PRIPREMA'), -- Pizza
+
+-- Dvanaesta narudžba
+(12, 12, 2, 2.00, 'POSLUZENO'), -- Kava
+
+-- Trinaesta narudžba
+(13, 5, 1, 12.00, 'POSLUZENO'), -- Burger
+(13, 18, 1, 4.00, 'POSLUZENO'), -- Pivo
+
+-- Četrnaesta narudžba
+(14, 12, 1, 2.00, 'STORNIRANO'); -- Kava
 
 -- 19. REZERVACIJA_GOST 
-INSERT INTO rezervacija_gost (rezervacija_id, gost_id) VALUES
 
+INSERT INTO rezervacija_gost (rezervacija_id, gost_id, uloga) VALUES
+-- 1-10
+(1, 1, 'NOSITELJ'),
+(2, 2, 'NOSITELJ'),
+(3, 3, 'NOSITELJ'), (3, 41, 'GOST'), 
+(4, 4, 'NOSITELJ'), (4, 42, 'GOST'), 
+(5, 5, 'NOSITELJ'), (5, 43, 'GOST'), 
+(6, 6, 'NOSITELJ'),
+(7, 7, 'NOSITELJ'), (7, 44, 'GOST'), 
+(8, 8, 'NOSITELJ'),
+(9, 9, 'NOSITELJ'), (9, 10, 'GOST'), (9, 11, 'GOST'), 
+(10, 10, 'NOSITELJ'), (10, 45, 'GOST'), 
 
--- 20. LOG_REZERVACIJE 
-INSERT INTO log_rezervacije (rezervacija_id, stari_status, novi_status, korisnik_db) VALUES
+-- 11-20
+(11, 11, 'NOSITELJ'), (11, 46, 'GOST'),
+(12, 12, 'NOSITELJ'), (12, 13, 'GOST'),
+(13, 13, 'NOSITELJ'), 
+(14, 14, 'NOSITELJ'), (14, 47, 'GOST'), 
+(15, 15, 'NOSITELJ'), (15, 48, 'GOST'), 
+(16, 16, 'NOSITELJ'),
+(17, 17, 'NOSITELJ'), (17, 49, 'GOST'),
+(18, 18, 'NOSITELJ'), (18, 50, 'GOST'),
+(19, 19, 'NOSITELJ'), (19, 20, 'GOST'), (19, 21, 'GOST'),
+(20, 20, 'NOSITELJ'), (20, 22, 'GOST'),
+
+-- 21-30
+(21, 21, 'NOSITELJ'), (21, 23, 'GOST'),
+(22, 22, 'NOSITELJ'), (22, 24, 'GOST'),
+(23, 23, 'NOSITELJ'),
+(24, 24, 'NOSITELJ'),
+(25, 25, 'NOSITELJ'),
+(26, 26, 'NOSITELJ'), (26, 27, 'GOST'),
+(27, 27, 'NOSITELJ'), (27, 28, 'GOST'), (27, 29, 'GOST'),
+(28, 28, 'NOSITELJ'), (28, 30, 'GOST'), (28, 31, 'GOST'), (28, 32, 'GOST'),
+(29, 29, 'NOSITELJ'), (29, 33, 'GOST'),
+(30, 30, 'NOSITELJ'), (30, 34, 'GOST'),
+
+-- 31-40
+(31, 31, 'NOSITELJ'),
+(32, 32, 'NOSITELJ'), (32, 35, 'GOST'),
+(33, 33, 'NOSITELJ'), (33, 36, 'GOST'),
+(34, 34, 'NOSITELJ'), (34, 37, 'GOST'),
+(35, 35, 'NOSITELJ'), (35, 38, 'GOST'),
+(36, 36, 'NOSITELJ'), (36, 39, 'GOST'),
+(37, 37, 'NOSITELJ'), (37, 40, 'GOST'), (37, 1, 'GOST'), (37, 2, 'GOST'),
+(38, 38, 'NOSITELJ'), (38, 3, 'GOST'), (38, 4, 'GOST'),
+(39, 39, 'NOSITELJ'), (39, 5, 'GOST'),
+(40, 40, 'NOSITELJ'), (40, 6, 'GOST');
 
 
 /*
--- 6. FINANCIJE
+-- 20. LOG_REZERVACIJE 
 */
+INSERT INTO log_rezervacije (rezervacija_id, stari_status, novi_status, vrijeme_promjene, korisnik_db) VALUES
+(1, 'POTVRDJENA', 'ZAVRSENA', '2026-01-12 10:13:00', 'luka.lukic'),
+(13, 'POTVRDJENA', 'OTKAZANA', '2026-06-05 14:24:00', 'nikola.ninic'),
+(16, 'POTVRDJENA', 'U_TIJEKU', '2026-12-01 14:02:00', 'iva.ivic'),
+(7, 'POTVRDJENA', 'ZAVRSENA', '2026-04-14 10:11:00', 'maja.majic'),
+(2, 'POTVRDJENA', 'ZAVRSENA', '2026-01-20 10:22:00', 'luka.lukic'),
+(3, 'POTVRDJENA', 'ZAVRSENA', '2026-02-13 10:08:00', 'iva.ivic');
 
+
+
+-- 6. FINANCIJE
 -- 21. RACUN
-INSERT INTO racun (id, rezervacija_id, datum_izdavanja, nacin_placanja, iznos_ukupno) VALUES
+
+INSERT INTO racun (id, rezervacija_id, datum_izdavanja, nacin_placanja, iznos_ukupno, status_racuna, napomena) VALUES
+-- Rezervacija 1
+(1, 1, '2026-01-12 10:13:00', 'KARTICA', 145.00, 'PLACENO', 'R1 na firmu'),
+-- Rezervacija 2
+(2, 2, '2026-01-20 10:23:00', 'GOTOVINA', 234.00, 'PLACENO', NULL),
+-- Rezervacija 3
+(3, 3, '2026-02-13 10:07:00', 'KARTICA', 360.00, 'PLACENO', NULL),
+-- Rezervacija 4
+(4, 4, '2026-02-22 10:32:00', 'ONLINE', 330.00, 'PLACENO', 'Placeno unaprijed'),
+-- Rezervacija 5
+(5, 5, '2026-03-12 10:09:00', 'KARTICA', 215.00, 'PLACENO', NULL),
+-- Rezervacija 6
+(6, 6, '2026-03-21 10:21:00', 'GOTOVINA', 285.00, 'PLACENO', NULL),
+-- Rezervacija 7
+(7, 7, '2026-04-14 10:11:00', 'VIRMANSKI', 930.00, 'PLACENO', NULL),
+-- Rezervacija 8
+(8, 8, '2026-04-24 10:37:00', 'KARTICA', 250.00, 'PLACENO', NULL),
+-- Rezervacija 9
+(9, 9, '2026-05-15 10:18:00', 'KARTICA', 680.00, 'PLACENO', NULL),
+-- Rezervacija 10
+(10, 10, '2026-05-20 10:08:00', 'GOTOVINA', 290.00, 'PLACENO', NULL),
+-- Rezervacija 11
+(11, 11, '2026-06-12 10:12:00', 'KARTICA', 140.00, 'PLACENO', NULL),
+-- Rezervacija 12
+(12, 12, '2026-06-23 10:16:00', 'KARTICA', 350.00, 'PLACENO', NULL),
+
+-- Otkazana s naplatm penala (Rez 13)
+(13, 13, '2026-06-05 14:26:00', 'KARTICA', 50.00, 'PLACENO', 'Naplata kasnog otkaza');
+
 
 
 -- 22. STAVKA_RACUNA
+
 INSERT INTO stavka_racuna (racun_id, usluga_id, tip_stavke, opis, kolicina, cijena_jedinicna, iznos_ukupno) VALUES
+-- Prvi račun
+(1, NULL, 'NOCENJE', 'Single soba', 2, 55.00, 110.00),
+(1, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 2, 2.00, 4.00),
+(1, 6, 'USLUGA', 'Orada večera', 1, 22.00, 22.00),
+
+-- Drugi račun
+(2, NULL, 'NOCENJE', 'Double soba', 2, 115.00, 230.00),
+(2, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 2, 2.00, 4.00),
+
+-- Treći račun
+(3, NULL, 'NOCENJE', 'Twin soba', 3, 115.00, 345.00),
+(3, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 6, 2.00, 12.00),
+
+-- Četvrti račun
+(4, NULL, 'NOCENJE', 'Triple soba', 2, 160.00, 320.00),
+(4, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 4, 2.00, 8.00),
+
+-- Peti račun
+(5, NULL, 'NOCENJE', 'Econ Double', 2, 95.00, 190.00),
+(5, 21, 'USLUGA', 'Spa ulaznica', 1, 15.00, 15.00),
+
+-- Šesti račun
+(6, NULL, 'NOCENJE', 'Econ Single', 3, 60.00, 180.00),
+(6, 28, 'USLUGA', 'Najam vozila', 2, 40.00, 80.00),
+
+-- Sedmi račun
+(7, NULL, 'NOCENJE', 'Junior Suite', 4, 230.00, 920.00),
+(7, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 8, 2.00, 16.00),
+
+-- Osmi račun
+(8, NULL, 'NOCENJE', 'Deluxe', 2, 155.00, 310.00),
+(8, NULL, 'OSTALO', 'Popust na buku', 1, -60.00, -60.00),
+
+-- Deveti račun
+(9, NULL, 'NOCENJE', 'Superior', 5, 135.00, 675.00),
+(9, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 15, 2.00, 30.00),
+
+-- Deseti račun
+(10, NULL, 'NOCENJE', 'Superior Twin', 2, 135.00, 270.00),
+(10, 5, 'USLUGA', 'Burger', 1, 12.00, 12.00),
+
+-- Jedanaesti račun
+(11, NULL, 'NOCENJE', 'Single', 2, 75.00, 150.00),
+
+-- Dvanaesti račun
+(12, NULL, 'NOCENJE', 'Econ Double', 3, 95.00, 285.00),
+(12, 22, 'USLUGA', 'Masaza 30min', 2, 25.00, 50.00),
+
+-- Trinaesti račun
+(13, NULL, 'OSTALO', 'Naknada', 1, 50.00, 50.00);
 
 
 /*
 -- 7. ODRŽAVANJE I FEEDBACK
 */
-
--- 23. CISCENJE_DNEVNI_NALOG
 INSERT INTO ciscenje_dnevni_nalog (zaposlenik_id, rezervacija_id, prijavljena_steta, opis_stete, obavljeno) VALUES
+(7, 1, 0, NULL, 1), 
+(8, 2, 1, 'Gost razbio čašu u kupaonici', 1),
+(9, 3, 0, NULL, 1), 
+(7, 4, 1, 'Crna mrlja na tepihu', 0),
+(10, 5, 0, NULL, 1),
+(8, 6, 0, NULL, 1),
+(9, 7, 0, NULL, 1),
+(7, 8, 1, 'Oštećena zavjesa', 1),
+(10, 9, 0, NULL, 1),
+(8, 10, 0, NULL, 1);
 
-
--- 24. SERVIS_DNEVNI_NALOG
 INSERT INTO servis_dnevni_nalog (zaposlenik_id, soba_id, korisnik_placa, opis, rijeseno) VALUES
+(13, 1, 0, 'Zamjena žarulje', 1),
+(14, 20, 1, 'Gost uništio daljinski od TV-a', 1),
+(15, 36, 0, 'Klima uređaj buči', 0),
+(16, 10, 0, 'Vrata od tuš kabine zapinju', 1),
+(17, 43, 0, 'Odštopavanje odvoda', 0),
+(13, 5, 0, 'Promjena baterija na bravi', 1),
+(14, 25, 0, 'Popravak noge od stola', 1),
+(15, 33, 0, 'Resetiranje routera', 1);
 
 
 -- 25. RECENZIJA
