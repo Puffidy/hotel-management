@@ -41,7 +41,7 @@ INSERT INTO rezervacija
 VALUES 
 (1, 1, 1, 1, '2026-07-15 12:00:00', '2026-08-01', '2026-08-05', 2, 'POTVRDJENA');
 -- --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 2. Provjera valjanosti promocije - ne/aktivna, vremeski period
+-- 2. Provjera valjanosti unosa rezervacije i promocije - ne/aktivna, vremeski period
 DELIMITER //
 
 CREATE TRIGGER trg_unos_provjera_valjanosti_promocije
@@ -98,3 +98,64 @@ INSERT INTO rezervacija
 (gost_nositelj_id, zaposlenik_id, soba_id, promocija_id, datum_rezervacije, pocetak_datum, kraj_datum, broj_osoba, status)
 VALUES 
 (1, 1, 1, 1, '2026-07-15 12:00:00', '2026-08-01', '2026-08-05', 2, 'POTVRDJENA');
+-- ---------------------------------------------------------------------------------------------------------------------------------- ----------------------------------------------------------------------------------------------------------------------------------
+-- 3. Provjera valjanosti ažuriranja promocije za rezervaciju - ne/aktivna, vremeski period
+DELIMITER // 
+
+CREATE TRIGGER trg_ažuriranje_provjera_valjanosti_promocije
+BEFORE UPDATE ON rezervacija
+FOR EACH ROW
+BEGIN
+    DECLARE v_aktivna BOOLEAN;
+    DECLARE v_datum_pocetka DATE;
+    DECLARE v_datum_zavrsetka DATE;
+
+    IF NEW.promocija_id IS NOT NULL AND (OLD.promocija_id IS NULL OR NEW.promocija_id != OLD.promocija_id) THEN
+        
+        SELECT aktivna, datum_pocetka, datum_zavrsetka 
+        INTO v_aktivna, v_datum_pocetka, v_datum_zavrsetka
+        FROM promocija 
+        WHERE id = NEW.promocija_id;
+
+        IF v_aktivna = 0 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Greška: Odabrana promocija je neaktivna!';
+        END IF;
+
+        IF DATE(NEW.datum_rezervacije) < v_datum_pocetka OR DATE(NEW.datum_rezervacije) > v_datum_zavrsetka THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Greška: Odabrana promocija je nevazeća za datum ove rezervacije!';
+        END IF;
+        
+    END IF;
+END //
+
+DELIMITER ;
+
+SELECT 
+
+    r.id AS ID_Rezervacije,
+    r.datum_rezervacije AS Datum_Kreiranja_Rez,
+    r.pocetak_datum AS Boravak_Od,
+    r.kraj_datum AS Boravak_Do,
+    
+    p.id AS ID_Promocije,
+    p.naziv AS Naziv_Promocije,
+    p.datum_pocetka AS Promo_Vrijedi_OD,        
+    p.datum_zavrsetka AS Promo_Vrijedi_DO  
+
+FROM 
+    rezervacija r
+JOIN 
+    promocija p ON r.promocija_id = p.id
+ORDER BY 
+    r.id;
+
+UPDATE rezervacija 
+SET promocija_id = 1 
+WHERE id = 9;
+
+UPDATE rezervacija 
+SET promocija_id = 999 
+WHERE id = 9;
+-- ---------------------------------------------------------------------------------------------------------------------------------- ----------------------------------------------------------------------------------------------------------------------------------
