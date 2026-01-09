@@ -120,53 +120,74 @@ INSERT INTO odjel (id, naziv, tel_kontakt, lokalni) VALUES
 (3,'Odrzavanje','010/100-300',300),
 (4,'Uprava','010/100-400',400),
 (5,'Restoran i Bar','010/100-500',500);
+-- 4.a KATEGORIJE ZAPOSLENIKAA 
+INSERT INTO pozicija_zaposlenika (id, naziv, razina_privilegija) VALUES
+(1, 'Direktor', 10),
+(2, 'Voditelj recepcije', 5),
+(3, 'Voditelj odrzavanja', 5),
+(4, 'Voditelj financija', 5),
+(5, 'Sef kuhinje', 5),
+(6, 'Nadzornica domacinstva', 5),
+(7, 'Recepcioner', 1),
+(8, 'Nocni recepcioner', 1),
+(9, 'Agent rezervacija', 1),
+(10, 'Sobarica', 1),
+(11, 'Pranje i peglaonica', 1),
+(12, 'Serviser', 1),
+(13, 'Tehnicar', 1),
+(14, 'Elektricar', 1),
+(15, 'Vodoinstalater', 1),
+(16, 'Tehnicar klimatizacije', 1),
+(17, 'Racunovodstvo', 1),
+(18, 'Administracija', 1),
+(19, 'HR referent', 1),
+(20, 'Kontroling', 1),
+(21, 'Konobar', 1),
+(22, 'Barmen', 1),
+(23, 'Pomocni kuhar', 1);
 
-
--- 5. ZAPOSLENIK
 INSERT INTO zaposlenik
-(id, odjel_id, ime, prezime, tel_kontakt, pozicija, je_voditelj_odjela, korisnicko_ime, lozinka_hash)
+(id, odjel_id, pozicija_id, ime, prezime, tel_kontakt, korisnicko_ime, lozinka_hash)
 VALUES
 -- 1 Recepcija
-(1,1,'Iva','Ivic','099111111','Recepcioner',0,'iva.ivic','pass123'),
-(2,1,'Luka','Lukic','099222222','Voditelj recepcije',1,'luka.lukic','admin123'),
-(3,1,'Maja','Majic','099101010','Recepcioner',0,'maja.majic','pass123'),
-(4,1,'Ivan','Ilic','099101011','Recepcioner',0,'ivan.ilic','pass123'),
-(5,1,'Tea','Teic','099101012','Nocni recepcioner',0,'tea.teic','pass123'),
-(6,1,'Nikola','Ninic','099101013','Agent rezervacija',0,'nikola.ninic','pass123'),
+(1,1,7,'Iva','Ivic','099111111','iva.ivic','pass123'),
+(2,1,2,'Luka','Lukic','099222222','luka.lukic','admin123'),
+(3,1,7,'Maja','Majic','099101010','maja.majic','pass123'),
+(4,1,7,'Ivan','Ilic','099101011','ivan.ilic','pass123'),
+(5,1,8,'Tea','Teic','099101012','tea.teic','pass123'),
+(6,1,9,'Nikola','Ninic','099101013','nikola.ninic','pass123'),
 
 -- 2 Domacinstvo
-(7,2,'Marija','Maricic','099333333','Sobarica',0,'marija.maricic','pass123'),
-(8,2,'Nina','Ninic','099333444','Sobarica',0,'nina.ninic','pass123'),
-(9,2,'Katarina','Katic','099202020','Sobarica',0,'katarina.katic','pass123'),
-(10,2,'Ivana','Ivanic','099202021','Sobarica',0,'ivana.ivanic','pass123'),
-(11,2,'Sandra','Sandric','099202022','Nadzornica domacinstva',1,'sandra.sandric','pass123'),
-(12,2,'Dora','Doric','099202023','Pranje i peglaonica',0,'dora.doric','pass123'),
+(7,2,10,'Marija','Maricic','099333333','marija.maricic','pass123'),
+(8,2,10,'Nina','Ninic','099333444','nina.ninic','pass123'),
+(9,2,10,'Katarina','Katic','099202020','katarina.katic','pass123'),
+(10,2,10,'Ivana','Ivanic','099202021','ivana.ivanic','pass123'),
+(11,2,6,'Sandra','Sandric','099202022','sandra.sandric','pass123'),
+(12,2,11,'Dora','Doric','099202023','dora.doric','pass123'),
 
--- 3 Odrzavanje
-(13,3,'Tomo','Tomic','099444444','Serviser',0,'tomo.tomic','pass123'),
-(14,3,'Mario','Marincic','099555555','Voditelj odrzavanja',1,'mario.marincic','pass123'),
-(15,3,'Stjepan','Stipic','099303030','Tehnicar',0,'stjepan.stipic','pass123'),
-(16,3,'Ante','Antic','099303031','Elektricar',0,'ante.antic','pass123'),
-(17,3,'Josip','Jovic','099303032','Vodoinstalater',0,'josip.jovic','pass123'),
-(18,3,'Filip','Filipovic','099303033','Tehnicar klimatizacije',0,'filip.filipovic','pass123'),
+-- 3 Tehničko
+(13,3,12,'Tomo','Tomic','099444444','tomo.tomic','pass123'),
+(14,3,3,'Mario','Marincic','099555555','mario.marincic','pass123'),
+(15,3,13,'Stjepan','Stipic','099303030','stjepan.stipic','pass123'),
+(16,3,14,'Ante','Antic','099303031','ante.antic','pass123'),
+(17,3,15,'Josip','Jovic','099303032','josip.jovic','pass123'),
+(18,3,16,'Filip','Filipovic','099303033','filip.filipovic','pass123'),
 
 -- 4 Uprava
-(19,4,'Ivana','Ivancic','099666666','Direktor',1,'ivana.ivancic','admin123'),
-(20,4,'Petra','Petric','099777777','Racunovodstvo',0,'petra.petric','pass123'),
-(21,4,'Marko','Maric','099404040','Voditelj financija',0,'marko.maric','pass123'),
-(22,4,'Lucija','Lucic','099404041','Administracija',0,'lucija.lucic','pass123'),
-(23,4,'Ena','Enic','099404042','HR referent',0,'ena.enic','pass123'),
-(24,4,'Bruno','Brunic','099404043','Kontroling',0,'bruno.brunic','pass123'),
+(19,4,1,'Ivana','Ivancic','099666666','ivana.ivancic','admin123'),
+(20,4,17,'Petra','Petric','099777777','petra.petric','pass123'),
+(21,4,4,'Marko','Maric','099404040','marko.maric','pass123'),
+(22,4,18,'Lucija','Lucic','099404041','lucija.lucic','pass123'),
+(23,4,19,'Ena','Enic','099404042','ena.enic','pass123'),
+(24,4,20,'Bruno','Brunic','099404043','bruno.brunic','pass123'),
 
--- 5 Restoran i Bar
-(25,5,'Marko','Markovic','099888888','Konobar',0,'marko.markovic','pass123'),
-(26,5,'Ana','Anic','099999999','Sef kuhinje',1,'ana.anic','pass123'),
-(27,5,'Karlo','Karlic','099505050','Konobar',0,'karlo.karlic','pass123'),
-(28,5,'Lana','Lanic','099505051','Konobar',0,'lana.lanic','pass123'),
-(29,5,'Mia','Miic','099505052','Barmen',0,'mia.miic','pass123'),
-(30,5,'Dario','Darik','099505053','Pomocni kuhar',0,'dario.darik','pass123');
-;
-
+-- 5 Restoran
+(25,5,21,'Marko','Markovic','099888888','marko.markovic','pass123'),
+(26,5,5,'Ana','Anic','099999999','ana.anic','pass123'),
+(27,5,21,'Karlo','Karlic','099505050','karlo.karlic','pass123'),
+(28,5,21,'Lana','Lanic','099505051','lana.lanic','pass123'),
+(29,5,22,'Mia','Miic','099505052','mia.miic','pass123'),
+(30,5,23,'Dario','Darik','099505053','dario.darik','pass123');
 
 -- 6. GOST
 INSERT INTO gost
