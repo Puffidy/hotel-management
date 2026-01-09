@@ -51,20 +51,27 @@ CREATE TABLE odjel (
     lokalni INT
 );
 
+-- 4.a KATEGORIJE ZAPOSLENIKA 
+CREATE TABLE pozicija_zaposlenika (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    naziv VARCHAR(50) NOT NULL UNIQUE,
+    razina_privilegija INT
+);
+
 -- 5. ZAPOSLENIK
 CREATE TABLE zaposlenik (
     id INT AUTO_INCREMENT PRIMARY KEY,
     odjel_id INT NOT NULL,
     ime VARCHAR(50) NOT NULL,
     prezime VARCHAR(50) NOT NULL,
+	pozicija_id INT NOT NULL,
     datum_zaposlenja TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     tel_kontakt VARCHAR(20),
     email VARCHAR(80),
-    pozicija VARCHAR(50),
-    je_voditelj_odjela BOOLEAN NOT NULL DEFAULT 0,
     korisnicko_ime VARCHAR(30) UNIQUE, 
     lozinka_hash VARCHAR(255), 
-    CONSTRAINT fk_zaposlenik_odjel FOREIGN KEY (odjel_id) REFERENCES odjel(id)
+    CONSTRAINT fk_zaposlenik_odjel FOREIGN KEY (odjel_id) REFERENCES odjel(id),
+	CONSTRAINT fk_zaposlenik_pozicija FOREIGN KEY (pozicija_id) REFERENCES pozicija_zaposlenika(id)
 );
 
 -- 6. GOST
