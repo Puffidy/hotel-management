@@ -159,3 +159,34 @@ UPDATE rezervacija
 SET promocija_id = 999 
 WHERE id = 9;
 -- ---------------------------------------------------------------------------------------------------------------------------------- ----------------------------------------------------------------------------------------------------------------------------------
+-- 4. Check-in vrijeme je od 14:00h nadalje
+    
+DELIMITER //
+
+CREATE TRIGGER trg_provjera_checkin
+BEFORE UPDATE ON rezervacija
+FOR EACH ROW
+BEGIN
+    IF NEW.vrijeme_check_in IS NOT NULL AND OLD.vrijeme_check_in IS NULL THEN
+        
+        IF HOUR(NEW.vrijeme_check_in) < 14 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Greška: Check-in nije dopušten prije 14:00 sati!';
+        END IF;
+        
+    END IF;
+END //
+
+DELIMITER ;
+
+UPDATE rezervacija 
+SET vrijeme_check_in = '2026-08-01 11:00:00',
+    status = 'U_TIJEKU'
+WHERE id = 25;
+
+UPDATE rezervacija 
+SET vrijeme_check_in = '2026-08-15 14:30:00',
+    status = 'U_TIJEKU'
+WHERE id = 28;
+
+-- ---------------------------------------------------------------------------------------------------------------------------------- ----------------------------------------------------------------------------------------------------------------------------------
