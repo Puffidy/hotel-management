@@ -504,3 +504,65 @@ JOIN gost g ON rez.gost_nositelj_id = g.id
 JOIN usluga u ON sr.usluga_id = u.id
 WHERE u.naziv = 'Završno čišćenje'
 ORDER BY r.id;
+
+
+DELIMITER $$
+
+/*
+  Trigger: trg_racun_tip_konzistencija_ins
+  Kada se okida: BEFORE INSERT na tablici racun
+  Svrha: Osigurati konzistentnost između tip_racuna i rezervacija_id.
+
+  Pravila:
+  1) Ako je tip_racuna = 'HOTEL' → rezervacija_id MORA biti postavljen (NOT NULL).
+     - Hotel račun uvijek pripada nekoj rezervaciji (smještaj).
+
+  2) Ako je tip_racuna = 'RESTORAN' → rezervacija_id MORA biti NULL.
+     - Restoran račun može biti za vanjskog gosta, pa ne smije imati vezu na rezervaciju.
+*/
+CREATE TRIGGER trg_racun_tip_konzistencija_ins
+BEFORE INSERT ON racun
+FOR EACH ROW
+BEGIN
+  -- Pravilo 1: HOTEL račun bez rezervacije nije dopušten
+  IF NEW.tip_racuna = 'HOTEL' AND NEW.rezervacija_id IS NULL THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'HOTEL racun mora imati rezervacija_id.';
+  END IF;
+
+  -- Pravilo 2: RESTORAN račun ne smije biti vezan uz rezervaciju
+  IF NEW.tip_racuna = 'RESTORAN' AND NEW.rezervacija_id IS NOT NULL THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'RESTORAN racun ne smije imati rezervacija_id.';
+  END IF;
+END$$
+
+/*
+  Trigger: trg_racun_tip_konzistencija_upd
+  Kada se okida: BEFORE UPDATE na tablici racun
+  Svrha: Ista provjera kao i na INSERT, ali prilikom izmjene postojećeg računa.
+
+  Zašto treba i UPDATE trigger:
+  - Da netko kasnije ne promijeni tip_racuna ili rezervacija_id i time “pokvari” logiku.
+    Primjeri koje sprječava:
+    - promjena HOTEL → RESTORAN uz zadržavanje rezervacija_id (ne smije)
+    - promjena RESTORAN → HOTEL bez postavljanja rezervacija_id (ne smije)
+*/
+CREATE TRIGGER trg_racun_tip_konzistencija_upd
+BEFORE UPDATE ON racun
+FOR EACH ROW
+BEGIN
+  -- Pravilo 1: HOTEL račun mora imati rezervaciju
+  IF NEW.tip_racuna = 'HOTEL' AND NEW.rezervacija_id IS NULL THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'HOTEL racun mora imati rezervacija_id.';
+  END IF;
+
+  -- Pravilo 2: RESTORAN račun ne smije imati rezervaciju
+  IF NEW.tip_racuna = 'RESTORAN' AND NEW.rezervacija_id IS NOT NULL THEN
+    SIGNAL SQLSTATE '45000'
+      SET MESSAGE_TEXT = 'RESTORAN racun ne smije imati rezervacija_id.';
+  END IF;
+END$$
+
+DELIMITER ;
