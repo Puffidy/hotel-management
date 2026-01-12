@@ -93,6 +93,8 @@ CREATE TABLE gost (
     CONSTRAINT fk_gost_drzavljanstvo FOREIGN KEY (drzavljanstvo_id) REFERENCES drzava(id),
     CONSTRAINT fk_gost_preb_grad FOREIGN KEY (prebivaliste_grad_id) REFERENCES grad(id),
     CONSTRAINT fk_gost_status FOREIGN KEY (status_id) REFERENCES status_gosta(id),
+
+    UNIQUE (vrsta_dokumenta_id, broj_dokumenta),
     
     INDEX idx_gost_potrosnja (ukupna_potrosnja_cache DESC)
 );
@@ -114,7 +116,7 @@ CREATE TABLE tip_sobe (
 -- 8. SOBA
 CREATE TABLE soba (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    broj INT NOT NULL,
+    broj INT NOT NULL UNIQUE,
     tip_sobe_id INT NOT NULL,
     kapacitet_osoba INT NOT NULL,
     kat INT NOT NULL,
@@ -180,7 +182,7 @@ CREATE TABLE normativ (
 -- 14. RESTORAN_STOL 
 CREATE TABLE restoran_stol (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    broj_stola INT NOT NULL,
+    broj_stola INT NOT NULL UNIQUE,
     broj_mjesta INT NOT NULL,
     lokacija VARCHAR(50)
 );
@@ -231,14 +233,13 @@ CREATE TABLE restoran_narudzba (
     id INT AUTO_INCREMENT PRIMARY KEY,
     zaposlenik_id INT NOT NULL, 
     restoran_stol_id INT NOT NULL,
-    rezervacija_smjestaj_id INT NULL, 
     datum_otvaranja TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     datum_zatvaranja TIMESTAMP NULL,
     status VARCHAR(20) DEFAULT 'OTVORENA',
     
     CONSTRAINT fk_rest_konobar FOREIGN KEY (zaposlenik_id) REFERENCES zaposlenik(id),
-    CONSTRAINT fk_rest_stol FOREIGN KEY (restoran_stol_id) REFERENCES restoran_stol(id),
-    CONSTRAINT fk_rest_rez FOREIGN KEY (rezervacija_smjestaj_id) REFERENCES rezervacija(id)
+    CONSTRAINT fk_rest_stol FOREIGN KEY (restoran_stol_id) REFERENCES restoran_stol(id)
+
 );
 
 -- 18. RESTORAN_STAVKA
@@ -251,7 +252,10 @@ CREATE TABLE restoran_stavka (
     status_pripreme VARCHAR(20) DEFAULT 'NARUCENO', 
     
     CONSTRAINT fk_rest_stavka_nar FOREIGN KEY (narudzba_id) REFERENCES restoran_narudzba(id),
-    CONSTRAINT fk_rest_stavka_usl FOREIGN KEY (usluga_id) REFERENCES usluga(id)
+    CONSTRAINT fk_rest_stavka_usl FOREIGN KEY (usluga_id) REFERENCES usluga(id),
+
+    CONSTRAINT chk_rest_kolicina CHECK (kolicina > 0),
+    CONSTRAINT chk_rest_cijena CHECK (cijena_u_trenutku >= 0)
 );
 
 -- 19. REZERVACIJA_GOST 
@@ -283,7 +287,9 @@ CREATE TABLE log_rezervacije (
 -- 21. RACUN
 CREATE TABLE racun (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    rezervacija_id INT NOT NULL,
+
+    tip_racuna VARCHAR(20) NOT NULL DEFAULT 'HOTEL',
+    rezervacija_id INT NULL,
     datum_izdavanja TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     nacin_placanja VARCHAR(20) NOT NULL,
     iznos_ukupno NUMERIC(10,2),
@@ -291,7 +297,7 @@ CREATE TABLE racun (
     napomena TEXT,
     CONSTRAINT fk_racun_rez FOREIGN KEY (rezervacija_id) REFERENCES rezervacija(id),
     CONSTRAINT chk_racun_nacin CHECK (nacin_placanja IN ('GOTOVINA','KARTICA','VIRMANSKI','ONLINE')),
-    
+    CONSTRAINT chk_racun_tip CHECK (tip_racuna IN ('HOTEL','RESTORAN')),
     CONSTRAINT chk_racun_status CHECK (status_racuna IN ('OTVOREN', 'PLACENO', 'STORNIRANO'))
 );
 
@@ -299,15 +305,27 @@ CREATE TABLE racun (
 CREATE TABLE stavka_racuna (
     id INT AUTO_INCREMENT PRIMARY KEY,
     racun_id INT NOT NULL,
+
     usluga_id INT NULL, 
+    restoran_stavka_id INT NULL,
+
     tip_stavke VARCHAR(30) NOT NULL,
     opis VARCHAR(100),
     kolicina INT NOT NULL DEFAULT 1,
     cijena_jedinicna NUMERIC(10,2) NOT NULL,
     iznos_ukupno NUMERIC(10,2) NOT NULL,
+
     CONSTRAINT chk_stavka_tip CHECK (tip_stavke IN ('NOCENJE','USLUGA','BORAVISNA_PRISTOJBA','OSTALO')),
     CONSTRAINT fk_stavka_racun FOREIGN KEY (racun_id) REFERENCES racun(id),
-    CONSTRAINT fk_stavka_usl FOREIGN KEY (usluga_id) REFERENCES usluga(id)
+    CONSTRAINT fk_stavka_usl FOREIGN KEY (usluga_id) REFERENCES usluga(id),
+
+    CONSTRAINT fk_stavka_racuna_rest_stavka
+        FOREIGN KEY (restoran_stavka_id) REFERENCES restoran_stavka(id),
+
+    UNIQUE (restoran_stavka_id),
+    CONSTRAINT chk_stavka_kolicina CHECK (kolicina > 0),
+    CONSTRAINT chk_stavka_cijena CHECK (cijena_jedinicna >= 0),
+    CONSTRAINT chk_stavka_iznos CHECK (iznos_ukupno >= 0)
 );
 
 /*
