@@ -324,7 +324,6 @@ CREATE TABLE stavka_racuna (
 
     UNIQUE (restoran_stavka_id),
     CONSTRAINT chk_stavka_kolicina CHECK (kolicina > 0),
-    CONSTRAINT chk_stavka_cijena CHECK (cijena_jedinicna >= 0),
     CONSTRAINT chk_stavka_iznos CHECK (iznos_ukupno >= 0)
 );
 
