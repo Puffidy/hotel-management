@@ -940,40 +940,49 @@ INSERT INTO log_rezervacije (rezervacija_id, stari_status, novi_status, vrijeme_
 -- 6. FINANCIJE
 -- 21. RACUN
 
-INSERT INTO racun (id, rezervacija_id, datum_izdavanja, nacin_placanja, iznos_ukupno, status_racuna, napomena) VALUES
+-- 21. RACUN (ispravak: dodan tip_racuna)
+-- Pravilo iz DDL-a:
+--  - HOTEL racun: rezervacija_id mora biti NOT NULL
+--  - RESTORAN racun: rezervacija_id treba biti NULL
+-- U tvom datasetu svi racuni 1-16 imaju rezervacija_id, pa su svi tipa HOTEL.
+
+INSERT INTO racun
+(id, tip_racuna, rezervacija_id, datum_izdavanja, nacin_placanja, iznos_ukupno, status_racuna, napomena)
+VALUES
 -- Rezervacija 1
-(1, 1, '2026-01-12 10:13:00', 'KARTICA', 145.00, 'PLACENO', 'R1 na firmu'),
+(1,  'HOTEL', 1,  '2026-01-12 10:13:00', 'KARTICA',   145.00, 'PLACENO',  'R1 na firmu'),
 -- Rezervacija 2
-(2, 2, '2026-01-20 10:23:00', 'GOTOVINA', 234.00, 'PLACENO', NULL),
+(2,  'HOTEL', 2,  '2026-01-20 10:23:00', 'GOTOVINA',  234.00, 'PLACENO',  NULL),
 -- Rezervacija 3
-(3, 3, '2026-02-13 10:07:00', 'KARTICA', 360.00, 'PLACENO', NULL),
+(3,  'HOTEL', 3,  '2026-02-13 10:07:00', 'KARTICA',   360.00, 'PLACENO',  NULL),
 -- Rezervacija 4
-(4, 4, '2026-02-22 10:32:00', 'ONLINE', 330.00, 'PLACENO', 'Placeno unaprijed'),
+(4,  'HOTEL', 4,  '2026-02-22 10:32:00', 'ONLINE',    330.00, 'PLACENO',  'Placeno unaprijed'),
 -- Rezervacija 5
-(5, 5, '2026-03-12 10:09:00', 'KARTICA', 215.00, 'PLACENO', NULL),
+(5,  'HOTEL', 5,  '2026-03-12 10:09:00', 'KARTICA',   215.00, 'PLACENO',  NULL),
 -- Rezervacija 6
-(6, 6, '2026-03-21 10:21:00', 'GOTOVINA', 285.00, 'PLACENO', NULL),
+(6,  'HOTEL', 6,  '2026-03-21 10:21:00', 'GOTOVINA',  285.00, 'PLACENO',  NULL),
 -- Rezervacija 7
-(7, 7, '2026-04-14 10:11:00', 'VIRMANSKI', 930.00, 'PLACENO', NULL),
+(7,  'HOTEL', 7,  '2026-04-14 10:11:00', 'VIRMANSKI', 930.00, 'PLACENO',  NULL),
 -- Rezervacija 8
-(8, 8, '2026-04-24 10:37:00', 'KARTICA', 250.00, 'PLACENO', NULL),
+(8,  'HOTEL', 8,  '2026-04-24 10:37:00', 'KARTICA',   250.00, 'PLACENO',  NULL),
 -- Rezervacija 9
-(9, 9, '2026-05-15 10:18:00', 'KARTICA', 680.00, 'PLACENO', NULL),
+(9,  'HOTEL', 9,  '2026-05-15 10:18:00', 'KARTICA',   680.00, 'PLACENO',  NULL),
 -- Rezervacija 10
-(10, 10, '2026-05-20 10:08:00', 'GOTOVINA', 290.00, 'PLACENO', NULL),
+(10, 'HOTEL', 10, '2026-05-20 10:08:00', 'GOTOVINA',  290.00, 'PLACENO',  NULL),
 -- Rezervacija 11
-(11, 11, '2026-06-12 10:12:00', 'KARTICA', 140.00, 'PLACENO', NULL),
+(11, 'HOTEL', 11, '2026-06-12 10:12:00', 'KARTICA',   140.00, 'PLACENO',  NULL),
 -- Rezervacija 12
-(12, 12, '2026-06-23 10:16:00', 'KARTICA', 350.00, 'PLACENO', NULL),
+(12, 'HOTEL', 12, '2026-06-23 10:16:00', 'KARTICA',   350.00, 'PLACENO',  NULL),
 
--- Otkazana s naplatm penala (Rez 13)
-(13, 13, '2026-06-05 14:26:00', 'KARTICA', 50.00, 'PLACENO', 'Naplata kasnog otkaza'),
+-- Otkazana s naplatom penala (Rez 13)
+(13, 'HOTEL', 13, '2026-06-05 14:26:00', 'KARTICA',    50.00, 'PLACENO',  'Naplata kasnog otkaza'),
 
-  -- Racuni koji nisu placeni
-(14, 31, '2026-09-03 10:53:00', 'GOTOVINA', 230.00, 'OTVOREN',NULL),
-(15, 32, '2026-09-08 12:17:00', 'KARTICA', 460.00, 'OTVOREN',NULL),
-(16, 33, '2026-09-03 10:53:00', 'GOTOVINA', 480.00, 'OTVOREN',NULL);
-
+-- Racuni koji nisu placeni
+(14, 'HOTEL', 31, '2026-09-03 10:53:00', 'GOTOVINA',  230.00, 'OTVOREN',  NULL),
+(15, 'HOTEL', 32, '2026-09-08 12:17:00', 'KARTICA',   460.00, 'OTVOREN',  NULL),
+(16, 'HOTEL', 33, '2026-09-03 10:53:00', 'GOTOVINA',  480.00, 'OTVOREN',  NULL);
+(17, 'RESTORAN', NULL, '2026-05-01 13:05:00', 'GOTOVINA', NULL, 'PLACENO', 'Gost izvana - narudzba 12'),
+(18, 'RESTORAN', NULL, '2026-06-01 20:30:00', 'KARTICA',  NULL, 'PLACENO', 'Gost izvana - narudzba 13');
 
 
 -- 22. STAVKA_RACUNA
