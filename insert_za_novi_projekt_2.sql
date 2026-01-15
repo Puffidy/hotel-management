@@ -978,57 +978,65 @@ INSERT INTO racun (id, rezervacija_id, datum_izdavanja, nacin_placanja, iznos_uk
 
 -- 22. STAVKA_RACUNA
 
-INSERT INTO stavka_racuna (racun_id, usluga_id, tip_stavke, opis, kolicina, cijena_jedinicna, iznos_ukupno) VALUES
--- Prvi račun
-(1, NULL, 'NOCENJE', 'Single soba', 2, 55.00, 110.00),
-(1, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 2, 2.00, 4.00),
-(1, 6, 'USLUGA', 'Orada večera', 1, 22.00, 22.00),
+INSERT INTO stavka_racuna
+(racun_id, usluga_id, restoran_stavka_id, tip_stavke, opis, kolicina, cijena_jedinicna, iznos_ukupno)
+VALUES
+-- Prvi račun (dodane 2 restoranske stavke iz narudzbe_id=1; restoran_stavka.id = 1 i 2)
+(1, NULL, NULL, 'NOCENJE', 'Single soba', 2, 55.00, 110.00),
+(1, NULL, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 2, 2.00, 4.00),
+
+-- RESTORAN: narudzba 1, stavka id=1 (Orada)
+(1, NULL, 1, 'USLUGA', 'Orada', 1, 22.00, 22.00),
+-- RESTORAN: narudzba 1, stavka id=2 (Vino bijelo, kolicina 2)
+(1, NULL, 2, 'USLUGA', 'Vino bijelo', 2, 4.50, 9.00),
 
 -- Drugi račun
-(2, NULL, 'NOCENJE', 'Double soba', 2, 115.00, 230.00),
-(2, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 2, 2.00, 4.00),
+(2, NULL, NULL, 'NOCENJE', 'Double soba', 2, 115.00, 230.00),
+(2, NULL, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 2, 2.00, 4.00),
 
 -- Treći račun
-(3, NULL, 'NOCENJE', 'Twin soba', 3, 115.00, 345.00),
-(3, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 6, 2.00, 12.00),
+(3, NULL, NULL, 'NOCENJE', 'Twin soba', 3, 115.00, 345.00),
+(3, NULL, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 6, 2.00, 12.00),
 
 -- Četvrti račun
-(4, NULL, 'NOCENJE', 'Triple soba', 2, 160.00, 320.00),
-(4, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 4, 2.00, 8.00),
+(4, NULL, NULL, 'NOCENJE', 'Triple soba', 2, 160.00, 320.00),
+(4, NULL, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 4, 2.00, 8.00),
 
 -- Peti račun
-(5, NULL, 'NOCENJE', 'Econ Double', 2, 95.00, 190.00),
-(5, 21, 'USLUGA', 'Spa ulaznica', 1, 15.00, 15.00),
+(5, NULL, NULL, 'NOCENJE', 'Econ Double', 2, 95.00, 190.00),
+(5, 21,   NULL, 'USLUGA', 'Spa ulaznica', 1, 15.00, 15.00),
 
 -- Šesti račun
-(6, NULL, 'NOCENJE', 'Econ Single', 3, 60.00, 180.00),
-(6, 28, 'USLUGA', 'Najam vozila', 2, 40.00, 80.00),
+(6, NULL, NULL, 'NOCENJE', 'Econ Single', 3, 60.00, 180.00),
+(6, 28,   NULL, 'USLUGA', 'Najam vozila', 2, 40.00, 80.00),
 
 -- Sedmi račun
-(7, NULL, 'NOCENJE', 'Junior Suite', 4, 230.00, 920.00),
-(7, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 8, 2.00, 16.00),
+(7, NULL, NULL, 'NOCENJE', 'Junior Suite', 4, 230.00, 920.00),
+(7, NULL, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 8, 2.00, 16.00),
 
 -- Osmi račun
-(8, NULL, 'NOCENJE', 'Deluxe', 2, 155.00, 310.00),
-(8, NULL, 'OSTALO', 'Popust na buku', 1, -60.00, -60.00),
+(8, NULL, NULL, 'NOCENJE', 'Deluxe', 2, 155.00, 310.00),
+(8, NULL, NULL, 'OSTALO', 'Popust na buku', 1, -60.00, -60.00),
 
 -- Deveti račun
-(9, NULL, 'NOCENJE', 'Superior', 5, 135.00, 675.00),
-(9, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 15, 2.00, 30.00),
+(9, NULL, NULL, 'NOCENJE', 'Superior', 5, 135.00, 675.00),
+(9, NULL, NULL, 'BORAVISNA_PRISTOJBA', 'BP', 15, 2.00, 30.00),
 
--- Deseti račun
-(10, NULL, 'NOCENJE', 'Superior Twin', 2, 135.00, 270.00),
-(10, 5, 'USLUGA', 'Burger', 1, 12.00, 12.00),
+-- Deseti račun (dodana 1 restoranska stavka iz narudzbe_id=10; restoran_stavka.id = 20 (Desert))
+(10, NULL, NULL, 'NOCENJE', 'Superior Twin', 2, 135.00, 270.00),
+
+-- RESTORAN: narudzba 10, stavka id=20 (Desert, kolicina 1)
+(10, NULL, 18, 'USLUGA', 'Desert', 1, 5.50, 5.50),
 
 -- Jedanaesti račun
-(11, NULL, 'NOCENJE', 'Single', 2, 75.00, 150.00),
+(11, NULL, NULL, 'NOCENJE', 'Single', 2, 75.00, 150.00),
 
 -- Dvanaesti račun
-(12, NULL, 'NOCENJE', 'Econ Double', 3, 95.00, 285.00),
-(12, 22, 'USLUGA', 'Masaza 30min', 2, 25.00, 50.00),
+(12, NULL, NULL, 'NOCENJE', 'Econ Double', 3, 95.00, 285.00),
+(12, 22,   NULL, 'USLUGA', 'Masaza 30min', 2, 25.00, 50.00),
 
 -- Trinaesti račun
-(13, NULL, 'OSTALO', 'Naknada', 1, 50.00, 50.00);
+(13, NULL, NULL, 'OSTALO', 'Naknada', 1, 50.00, 50.00);
 
 
 /*
