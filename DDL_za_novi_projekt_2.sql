@@ -365,4 +365,4 @@ CREATE TABLE recenzija (
     CONSTRAINT fk_recenzija_rez FOREIGN KEY (rezervacija_id) REFERENCES rezervacija(id)
 );
 
-ALTER TABLE stavka_racuna DROP CHECK chk_stavka_iznos;
+
