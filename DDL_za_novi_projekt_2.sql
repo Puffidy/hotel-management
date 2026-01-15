@@ -323,8 +323,6 @@ CREATE TABLE stavka_racuna (
         FOREIGN KEY (restoran_stavka_id) REFERENCES restoran_stavka(id),
 
     UNIQUE (restoran_stavka_id),
-    CONSTRAINT chk_stavka_kolicina CHECK (kolicina > 0),
-    CONSTRAINT chk_stavka_iznos CHECK (iznos_ukupno >= 0)
 );
 
 /*
