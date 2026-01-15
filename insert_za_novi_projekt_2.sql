@@ -967,7 +967,12 @@ INSERT INTO racun (id, rezervacija_id, datum_izdavanja, nacin_placanja, iznos_uk
 (12, 12, '2026-06-23 10:16:00', 'KARTICA', 350.00, 'PLACENO', NULL),
 
 -- Otkazana s naplatm penala (Rez 13)
-(13, 13, '2026-06-05 14:26:00', 'KARTICA', 50.00, 'PLACENO', 'Naplata kasnog otkaza');
+(13, 13, '2026-06-05 14:26:00', 'KARTICA', 50.00, 'PLACENO', 'Naplata kasnog otkaza'),
+
+  -- Racuni koji nisu placeni
+(14, 31, '2026-09-03 10:53:00', 'GOTOVINA', 230.00, 'OTVOREN',NULL),
+(15, 32, '2026-09-08 12:17:00', 'KARTICA', 460.00, 'OTVOREN',NULL),
+(16, 33, '2026-09-03 10:53:00', 'GOTOVINA', 480.00, 'OTVOREN',NULL);
 
 
 
