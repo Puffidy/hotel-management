@@ -322,7 +322,7 @@ CREATE TABLE stavka_racuna (
     CONSTRAINT fk_stavka_racuna_rest_stavka
         FOREIGN KEY (restoran_stavka_id) REFERENCES restoran_stavka(id),
 
-    UNIQUE (restoran_stavka_id),
+    UNIQUE (restoran_stavka_id)
 );
 
 /*
