@@ -87,3 +87,109 @@ CALL ocisti_stare_log_rez(90, @broj_obrisanih);
 
 SELECT @broj_obrisanih AS 'Ukupno trajno obrisanih zapisa';
 
+/*PROCEDURE-Ivona*/
+
+/******************Prebacivanje statusa sobe na “SLOBODNA” ako je trenutno u statusu "CISCENJE"***************/
+DELIMITER $$
+CREATE PROCEDURE sp_ociscena_soba(IN p_soba_id INT)
+BEGIN
+    /* Ažuriranje statusa sobe samo ako je trenutno u statusu čišćenja */
+    UPDATE soba
+    SET status = 'SLOBODNA'
+    WHERE id = p_soba_id
+      AND status = 'CISCENJE';
+END$$
+DELIMITER ;
+CALL sp_ociscena_soba(101);
+
+/******************Dodavanje gosta na rezervaciju (pojednostavljeno)******************/
+DELIMITER $$
+CREATE PROCEDURE sp_dodaj_gosta_na_rezervaciju(
+    IN p_rezervacija_id INT,
+    IN p_gost_id INT
+)
+BEGIN
+    /* Provjera da gost već nije na rezervaciji */
+    IF NOT EXISTS (
+        SELECT 1 FROM rezervacija_gost
+        WHERE rezervacija_id = p_rezervacija_id
+          AND gost_id = p_gost_id
+    ) THEN
+        /* Dodavanje gosta u rezervaciju */
+        INSERT INTO rezervacija_gost(rezervacija_id, gost_id)
+        VALUES(p_rezervacija_id, p_gost_id);
+    END IF;
+
+    /* Povećanje broja osoba u rezervaciji */
+    UPDATE rezervacija
+    SET broj_osoba = broj_osoba + 1
+    WHERE id = p_rezervacija_id;
+END$$
+DELIMITER ;
+
+-- CALL koji radi sa postojećim insertima iz tvog koda
+CALL sp_dodaj_gosta_na_rezervaciju(1, 1);  -- rezervacija_id = 1, gost_id = 1
+
+
+/*****************Primjena promocije na rezervaciju i dodavanje stavke popusta (pojednostavljeno)*********************/
+DELIMITER $$
+CREATE PROCEDURE sp_primijeni_promociju(
+    IN p_rezervacija_id INT,   
+    IN p_promocija_id INT      
+)
+BEGIN
+    DECLARE v_popust DECIMAL(5,2);
+    DECLARE v_racun_id INT;
+
+    /* Dohvaćanje postotka popusta iz promocije ako je aktivna i u trenutnom datumu */
+    SELECT popust_postotak
+    INTO v_popust
+    FROM promocija
+    WHERE id = p_promocija_id
+      AND aktivna = 1
+      AND CURDATE() BETWEEN datum_pocetka AND datum_zavrsetka
+    LIMIT 1;
+
+    IF v_popust IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Promocija nije aktivna ili ne postoji';
+    END IF;
+
+    /* Veži promociju na rezervaciju */
+    UPDATE rezervacija
+    SET promocija_id = p_promocija_id
+    WHERE id = p_rezervacija_id;
+
+    /* Dohvaćanje otvorenog računa za rezervaciju */
+    SELECT id
+    INTO v_racun_id
+    FROM racun
+    WHERE rezervacija_id = p_rezervacija_id
+      AND status_racuna = 'OTVOREN'
+    LIMIT 1;
+
+    /* Ako postoji otvoreni račun, dodaj stavku popusta */
+    IF v_racun_id IS NOT NULL THEN
+        INSERT INTO stavka_racuna(
+            racun_id,
+            tip_stavke,
+            opis,
+            kolicina,
+            cijena_jedinicna,
+            iznos_ukupno
+        )
+        VALUES (
+            v_racun_id,
+            'OSTALO',
+            CONCAT('Popust - promocija ', p_promocija_id),
+            1,
+            -v_popust,
+            -v_popust
+        );
+    END IF;
+END$$
+DELIMITER ;
+
+-- CALL koji radi sa postojećim insertima
+CALL sp_primijeni_promociju(1, 1);  -- rezervacija_id = 1, promocija_id = 1
+
