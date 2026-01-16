@@ -16,10 +16,18 @@ Sve što napraviš ubaci u datoteku na GIT-hub.
 
 Pogledajte google doc, kada odaberete što ćete raditi, napišite to ovdje u grupu.
 
+### Upute za instalaciju i pokretanje
 
+Prvo instalirajte potrebne biblioteke putem terminala:
+
+```bash
 pip install streamlit mysql-connector-python pandas
 
-Odmah na vrhu se nalazi ovaj dio koda
+Konfiguracija baze
+Odmah na vrhu koda nalazi se funkcija za spajanje.
+
+Napomena: user i password upišite onaj koji koristite za spajanje na MySQL Workbench.
+
 def get_connection():
     return mysql.connector.connect(
         host="localhost",
@@ -27,6 +35,5 @@ def get_connection():
         password="password",   # <-- TVOJA LOZINKA
         database="novi_projekt"
     )
-user i pass upišete koji korisiti za spajanje na MySQL Workbench
 
-streamlit run main.py
+Aplikaciju pokrenite naredbom: streamlit run main.py
