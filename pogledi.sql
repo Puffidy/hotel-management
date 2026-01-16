@@ -112,3 +112,52 @@ FROM racun r
 WHERE r.status_racuna = 'OTVOREN' 
 ORDER BY r.datum_izdavanja DESC;
 SELECT *FROM neplaceni_racuni;
+
+
+-- -----------------------------------------
+
+CREATE OR REPLACE VIEW pregled_svih_racuna AS
+SELECT 
+    r.id AS racun_id,
+    r.tip_racuna,
+    r.status_racuna,
+    r.iznos_ukupno,
+    r.nacin_placanja,
+    r.datum_izdavanja,
+    r.rezervacija_id,
+    -- Spajamo ime i prezime gosta. 
+    -- Ako je račun iz Restorana (nema rezervacije), ovo će biti NULL.
+    CONCAT(g.ime, ' ', g.prezime) AS gost_nositelj
+FROM racun r
+LEFT JOIN rezervacija rez ON r.rezervacija_id = rez.id
+LEFT JOIN gost g ON rez.gost_nositelj_id = g.id;
+
+-- ---------------------------------------------
+
+CREATE OR REPLACE VIEW pregled_zaliha_skladiste AS
+SELECT 
+    a.id AS artikl_id,
+    a.naziv,
+    a.stanje_zaliha,
+    a.jedinica_mjere,
+    a.nabavna_cijena,
+    -- Baza odmah računa koliko novaca imamo u robi
+    (a.stanje_zaliha * a.nabavna_cijena) AS ukupna_vrijednost
+FROM artikl a;
+
+-- ---------------------------------------
+
+CREATE OR REPLACE VIEW pregled_svih_rezervacija AS
+SELECT 
+    r.id AS rezervacija_id,
+    CONCAT(g.ime, ' ', g.prezime) AS gost,
+    s.broj AS soba,
+    r.pocetak_datum,
+    r.kraj_datum,
+    r.status,
+    r.broj_osoba,
+    r.napomena
+FROM rezervacija r
+JOIN gost g ON r.gost_nositelj_id = g.id
+JOIN soba s ON r.soba_id = s.id
+ORDER BY r.pocetak_datum DESC;
