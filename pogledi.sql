@@ -161,3 +161,109 @@ FROM rezervacija r
 JOIN gost g ON r.gost_nositelj_id = g.id
 JOIN soba s ON r.soba_id = s.id
 ORDER BY r.pocetak_datum DESC;
+
+-- 1. Pogled za Meni (Samo hrana i piće za dropdown)
+CREATE OR REPLACE VIEW view_meni_restoran AS
+SELECT id, naziv, cijena_trenutna, kategorija_id
+FROM usluga 
+WHERE kategorija_id IN (1, 2); -- 1=Hrana, 2=Piće
+
+-- 2. Pogled za Kuhinju (Display narudžbi)
+CREATE OR REPLACE VIEW view_kuhinja_display AS
+SELECT 
+    rs.id AS stavka_id,
+    rs.narudzba_id,
+    u.naziv AS naziv_jela,
+    rs.kolicina,
+    rs.status_pripreme,
+    u.kategorija_id -- Treba nam za ikonu (burger/pivo)
+FROM restoran_stavka rs
+JOIN usluga u ON rs.usluga_id = u.id
+WHERE rs.status_pripreme IN ('NARUCENO', 'PRIPREMA');
+
+-- 3. Pogled za Otvorene Narudžbe i Totale (Za naplatu)
+CREATE OR REPLACE VIEW view_otvorene_narudzbe_total AS
+SELECT 
+    rn.id AS narudzba_id,
+    rs.broj_stola,
+    -- Baza sama računa total
+    COALESCE(SUM(rst.kolicina * rst.cijena_u_trenutku), 0) AS total_iznos
+FROM restoran_narudzba rn
+JOIN restoran_stol rs ON rn.restoran_stol_id = rs.id
+LEFT JOIN restoran_stavka rst ON rn.id = rst.narudzba_id
+WHERE rn.status = 'OTVORENA'
+GROUP BY rn.id, rs.broj_stola;
+
+-- 4. Pogled za Domaćinstvo (Prljave sobe)
+CREATE OR REPLACE VIEW view_sobe_za_ciscenje AS
+SELECT s.id, s.broj, ts.naziv AS tip_sobe, s.status
+FROM soba s
+JOIN tip_sobe ts ON s.tip_sobe_id = ts.id
+WHERE s.status = 'CISCENJE';
+
+-- 1. Pogled za aktivne rezervacije (Samo gosti koji su trenutno u sobi)
+CREATE OR REPLACE VIEW view_aktivne_rezervacije AS
+SELECT 
+    r.id AS rezervacija_id, 
+    s.broj AS broj_sobe, 
+    g.ime, 
+    g.prezime 
+FROM rezervacija r
+JOIN soba s ON r.soba_id = s.id
+JOIN gost g ON r.gost_nositelj_id = g.id
+WHERE r.status = 'U_TIJEKU';
+
+-- 2. Pogled za dodatne usluge (Samo Wellness i Ostalo)
+CREATE OR REPLACE VIEW view_dodatne_usluge AS
+SELECT id, naziv, cijena_trenutna 
+FROM usluga 
+WHERE kategorija_id IN (3, 4); -- 3=Wellness, 4=Ostalo
+
+-- 1. POGLED ZA AKTIVNE KVAROVE (Zamjenjuje onaj veliki JOIN u Pythonu)
+CREATE OR REPLACE VIEW view_aktivni_kvarovi AS
+SELECT 
+    n.id AS nalog_id,
+    CONCAT(z.ime, ' ', z.prezime) AS serviser,
+    s.broj AS broj_sobe,
+    n.soba_id, -- Treba nam ID sobe za akcije (UPDATE)
+    n.opis AS opis_kvara,
+    n.datum_naloga,
+    n.rijeseno
+FROM servis_dnevni_nalog n
+JOIN zaposlenik z ON n.zaposlenik_id = z.id
+JOIN soba s ON n.soba_id = s.id
+WHERE n.rijeseno = 0;
+
+-- 2. POGLED ZA OSOBLJE ODRŽAVANJA (Da ne hardcodiramo odjel_id = 3 u Pythonu)
+CREATE OR REPLACE VIEW view_osoblje_odrzavanja AS
+SELECT 
+    z.id, 
+    z.ime, 
+    z.prezime,
+    CONCAT(z.ime, ' ', z.prezime) AS puno_ime
+FROM zaposlenik z
+JOIN odjel o ON z.odjel_id = o.id
+WHERE o.naziv = 'Odrzavanje'; -- Ili o.id = 3, ali po nazivu je sigurnije
+
+-- 3. POGLED ZA LISTU SVIH SOBA (Jednostavan, ali koristan za dropdown menije)
+CREATE OR REPLACE VIEW view_lista_soba_jednostavna AS
+SELECT id, broj 
+FROM soba 
+ORDER BY broj;
+
+-- 2. POGLED: STATUSI S BOJAMA (UI logika u bazi!)
+CREATE OR REPLACE VIEW view_status_soba_boje AS
+SELECT 
+    s.id,
+    s.broj,
+    ts.trenutno_stanje AS stanje, -- Koristimo tvoj postojeći view 'trenutno_stanje_soba' ako želiš, ili direktno tablicu
+    CASE 
+        WHEN ts.trenutno_stanje = 'ZAUZETA' THEN '#ffcdd2'       -- Crvena
+        WHEN ts.trenutno_stanje = 'SLOBODNA' THEN '#c8e6c9'      -- Zelena
+        WHEN ts.trenutno_stanje = 'CISCENJE' THEN '#fff9c4'      -- Žuta
+        WHEN ts.trenutno_stanje = 'IZVAN_FUNKCIJE' THEN '#e0e0e0' -- Siva
+        ELSE '#ffffff'
+    END AS hex_boja
+FROM soba s
+-- Spajamo se na tvoj postojeći view koji računa je li soba zauzeta
+JOIN trenutno_stanje_soba ts ON s.id = ts.soba_id;

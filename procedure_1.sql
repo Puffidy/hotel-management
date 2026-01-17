@@ -351,3 +351,198 @@ main: BEGIN  -- <--- Dodali smo oznaku "main" kako bi LEAVE znao sto napusta
 END // -- Kraj procedure
 
 DELIMITER ;
+
+-- 1. Procedura za kreiranje nove rezervacije
+DROP PROCEDURE IF EXISTS sp_kreiraj_rezervaciju;
+DELIMITER //
+
+CREATE PROCEDURE sp_kreiraj_rezervaciju(
+    IN p_gost_id INT,
+    IN p_soba_id INT,
+    IN p_promocija_id INT, -- Može biti NULL
+    IN p_datum_dolaska DATE,
+    IN p_datum_odlaska DATE,
+    IN p_broj_osoba INT,
+    IN p_napomena TEXT
+)
+BEGIN
+    -- Samo radimo INSERT. 
+    -- Svi tvoji Triggeri (provjera datuma, zauzeća sobe, promocije) 
+    -- će se automatski aktivirati i spriječiti unos ako nešto ne valja.
+    INSERT INTO rezervacija 
+    (gost_nositelj_id, zaposlenik_id, soba_id, promocija_id, pocetak_datum, kraj_datum, broj_osoba, status, napomena)
+    VALUES 
+    (p_gost_id, 1, p_soba_id, p_promocija_id, p_datum_dolaska, p_datum_odlaska, p_broj_osoba, 'POTVRDJENA', p_napomena);
+END //
+
+DELIMITER ;
+
+-- 2. Procedura za unos novog gosta
+DROP PROCEDURE IF EXISTS sp_kreiraj_gosta;
+
+DELIMITER //
+
+CREATE PROCEDURE sp_kreiraj_gosta(
+    IN p_ime VARCHAR(50),
+    IN p_prezime VARCHAR(50),
+    IN p_vrsta_dok_id INT,
+    IN p_broj_dok VARCHAR(30),
+    IN p_grad_id INT,
+    IN p_adresa VARCHAR(100),
+    IN p_drzava_id INT
+)
+BEGIN
+    -- Insert novog gosta
+    INSERT INTO gost 
+    (ime, prezime, vrsta_dokumenta_id, broj_dokumenta, prebivaliste_grad_id, prebivaliste_adresa, drzavljanstvo_id)
+    VALUES 
+    (p_ime, p_prezime, p_vrsta_dok_id, p_broj_dok, p_grad_id, p_adresa, p_drzava_id);
+END //
+
+DELIMITER ;
+
+-- 3. Procedura za Check-In
+DROP PROCEDURE IF EXISTS sp_rezervacija_check_in;
+
+DELIMITER //
+
+CREATE PROCEDURE sp_rezervacija_check_in(
+    IN p_rezervacija_id INT
+)
+BEGIN
+    -- Trigger 'trg_sprijeci_rani_checkin' će paziti na datume umjesto nas
+    UPDATE rezervacija 
+    SET status = 'U_TIJEKU', 
+        vrijeme_check_in = NOW() 
+    WHERE id = p_rezervacija_id;
+END //
+
+DELIMITER ;
+
+-- 4. Procedura za Check-Out
+DROP PROCEDURE IF EXISTS sp_rezervacija_check_out;
+
+DELIMITER //
+
+CREATE PROCEDURE sp_rezervacija_check_out(
+    IN p_rezervacija_id INT
+)
+BEGIN
+    UPDATE rezervacija 
+    SET status = 'ZAVRSENA', 
+        vrijeme_check_out = NOW() 
+    WHERE id = p_rezervacija_id;
+END //
+
+DELIMITER ;
+
+-- -----------------------------------------------
+DROP PROCEDURE IF EXISTS sp_dodaj_uslugu_na_sobu;
+
+DELIMITER //
+
+CREATE PROCEDURE sp_dodaj_uslugu_na_sobu(
+    IN p_rezervacija_id INT,
+    IN p_usluga_id INT,
+    IN p_kolicina INT,
+    IN p_napomena VARCHAR(100)
+)
+BEGIN
+    DECLARE v_racun_id INT;
+    DECLARE v_cijena DECIMAL(10,2);
+    DECLARE v_naziv_usluge VARCHAR(50);
+
+    -- 1. Nađi trenutnu cijenu usluge
+    SELECT cijena_trenutna, naziv INTO v_cijena, v_naziv_usluge 
+    FROM usluga WHERE id = p_usluga_id;
+
+    -- 2. Nađi OTVOREN HOTEL račun za tu rezervaciju
+    SELECT id INTO v_racun_id
+    FROM racun 
+    WHERE rezervacija_id = p_rezervacija_id 
+      AND tip_racuna = 'HOTEL' 
+      AND status_racuna = 'OTVOREN' 
+    LIMIT 1;
+
+-- Ako račun ne postoji, otvori ga automatski
+    IF v_racun_id IS NULL THEN
+        INSERT INTO racun (tip_racuna, rezervacija_id, nacin_placanja, iznos_ukupno, status_racuna)
+        VALUES ('HOTEL', p_rezervacija_id, 'VIRMANSKI', 0.00, 'OTVOREN');
+        SET v_racun_id = LAST_INSERT_ID();
+    END IF;
+    
+    -- 3. Dodaj stavku na račun
+    INSERT INTO stavka_racuna (racun_id, usluga_id, tip_stavke, opis, kolicina, cijena_jedinicna, iznos_ukupno)
+    VALUES (v_racun_id, p_usluga_id, 'USLUGA', IFNULL(p_napomena, v_naziv_usluge), p_kolicina, v_cijena, v_cijena * p_kolicina);
+
+    -- 4. Ažuriraj ukupni iznos računa
+    UPDATE racun 
+    SET iznos_ukupno = (SELECT SUM(iznos_ukupno) FROM stavka_racuna WHERE racun_id = v_racun_id)
+    WHERE id = v_racun_id;
+
+END //
+
+DELIMITER ;
+
+-- -----------------------------------
+-- 1. PROCEDURA: ČIŠĆENJE + EVIDENCIJA ŠTETE
+DROP PROCEDURE IF EXISTS proc_evidentiraj_ciscenje;
+
+DELIMITER //
+CREATE PROCEDURE proc_evidentiraj_ciscenje(
+    IN p_soba_id INT,
+    IN p_opis_stete TEXT,
+    IN p_zaposlenik_id INT -- Tko je čistio
+)
+BEGIN
+    DECLARE v_rezervacija_id INT;
+    DECLARE v_ima_stete BOOLEAN DEFAULT 0;
+    
+    -- 1. Nađi zadnju rezervaciju za tu sobu (čak i ako je upravo završila)
+    SELECT id INTO v_rezervacija_id 
+    FROM rezervacija 
+    WHERE soba_id = p_soba_id 
+    ORDER BY kraj_datum DESC LIMIT 1;
+    
+    -- 2. Odredi ima li štete
+    IF p_opis_stete IS NOT NULL AND p_opis_stete != '' THEN
+        SET v_ima_stete = 1;
+    END IF;
+    
+    -- 3. Upiši u dnevnik čišćenja (ako nema rezervacije, stavi NULL)
+    INSERT INTO ciscenje_dnevni_nalog (zaposlenik_id, rezervacija_id, prijavljena_steta, opis_stete, obavljeno)
+    VALUES (p_zaposlenik_id, v_rezervacija_id, v_ima_stete, p_opis_stete, 1);
+    
+    -- 4. Pozovi postojeću logiku za promjenu statusa sobe
+    -- (Ovo je tvoja postojeća procedura, samo je zovemo iznutra)
+    CALL sp_ociscena_soba(p_soba_id);
+    
+END //
+DELIMITER ;
+
+-- ------------------------------------
+
+-- 3. PROCEDURA: DODAJ SUPUTNIKA
+DROP PROCEDURE IF EXISTS proc_dodaj_suputnika;
+
+DELIMITER //
+CREATE PROCEDURE proc_dodaj_suputnika(
+    IN p_rezervacija_id INT,
+    IN p_gost_id INT
+)
+BEGIN
+    DECLARE v_postoji INT;
+    
+    -- Provjeri je li gost već na toj rezervaciji
+    SELECT COUNT(*) INTO v_postoji 
+    FROM rezervacija_gost 
+    WHERE rezervacija_id = p_rezervacija_id AND gost_id = p_gost_id;
+    
+    IF v_postoji > 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Gost je već dodan na ovu rezervaciju.';
+    ELSE
+        INSERT INTO rezervacija_gost (rezervacija_id, gost_id, uloga)
+        VALUES (p_rezervacija_id, p_gost_id, 'GOST');
+    END IF;
+END //
+DELIMITER ;
