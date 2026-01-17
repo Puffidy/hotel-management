@@ -127,7 +127,7 @@ SELECT
     r.rezervacija_id,
     -- Spajamo ime i prezime gosta. 
     -- Ako je račun iz Restorana (nema rezervacije), ovo će biti NULL.
-    CONCAT(g.ime, ' ', g.prezime) AS gost_nositelj
+    COALESCE(CONCAT(g.ime, ' ', g.prezime), 'Vanjski Gost') AS gost_nositelj
 FROM racun r
 LEFT JOIN rezervacija rez ON r.rezervacija_id = rez.id
 LEFT JOIN gost g ON rez.gost_nositelj_id = g.id;

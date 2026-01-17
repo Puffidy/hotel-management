@@ -119,28 +119,36 @@ if menu == "📅 RECEPCIJA (Rezervacije)":
                     pass
 
         if submit_btn:
-            if datum_dolaska >= datum_odlaska:
-                st.error("Datum odlaska mora biti nakon datuma dolaska!")
+            # --- UKLONJENA PYTHON PROVJERA DATUMA ---
+            # Šaljemo podatke ravno u bazu, neka se Trigger "trg_check_datumi_rezervacije" brine o tome!
+            
+            # Priprema podataka (int konverzija koju smo popravili)
+            g_id = int(gost_dict[odabrani_gost_lbl])
+            s_id = int(soba_dict[odabrana_soba_lbl])
+            
+            raw_promo_id = promo_dict[odabrana_promo_lbl]
+            p_id = int(raw_promo_id) if raw_promo_id is not None else None
+            br_osoba = int(broj_osoba)
+            
+            sql = """
+                INSERT INTO rezervacija 
+                (gost_nositelj_id, zaposlenik_id, soba_id, promocija_id, pocetak_datum, kraj_datum, broj_osoba, status, napomena)
+                VALUES (%s, 1, %s, %s, %s, %s, %s, 'POTVRDJENA', %s)
+            """ 
+            
+            params = (g_id, s_id, p_id, datum_dolaska, datum_odlaska, br_osoba, napomena)
+            
+            # Pokušaj izvršavanja
+            success, msg = run_action(sql, params)
+            
+            if success:
+                st.toast("✅ Rezervacija uspješno kreirana!", icon='📅')
+                time.sleep(1)
+                st.rerun()
             else:
-                g_id = gost_dict[odabrani_gost_lbl]
-                s_id = soba_dict[odabrana_soba_lbl]
-                p_id = promo_dict[odabrana_promo_lbl]
-                
-                sql = """
-                    INSERT INTO rezervacija 
-                    (gost_nositelj_id, zaposlenik_id, soba_id, promocija_id, pocetak_datum, kraj_datum, broj_osoba, status, napomena)
-                    VALUES (%s, 1, %s, %s, %s, %s, %s, 'POTVRDJENA', %s)
-                """ 
-                params = (g_id, s_id, p_id, datum_dolaska, datum_odlaska, broj_osoba, napomena)
-                
-                success, msg = run_action(sql, params)
-                
-                if success:
-                    st.toast("✅ Rezervacija uspješno kreirana!", icon='📅')
-                    time.sleep(1)
-                    st.rerun()
-                else:
-                    st.error(f"❌ {msg}") 
+                # Ovdje će se ispisati točna poruka koju si definirao u TRIGGERU
+                # Npr: "Greška iz baze: Greška: Datum odlaska mora biti nakon datuma dolaska!"
+                st.error(f"⛔ {msg}")
 
     # --- TAB 2: LISTA I AKCIJE (Check-in, Check-out, Otkazivanje) ---
     with tab_lista:
@@ -223,65 +231,90 @@ if menu == "📅 RECEPCIJA (Rezervacije)":
                         else:
                             st.error(msg)
 
-    # --- TAB 3: NOVI GOST (Potpuno novo) ---
+    # --- TAB 3: NOVI GOST (POPRAVLJENO AŽURIRANJE) ---
     with tab_gost:
         st.header("Unos novog gosta")
-        with st.form("novi_gost_forma"):
-            ng_ime = st.text_input("Ime")
-            ng_prezime = st.text_input("Prezime")
-            
-            c1, c2 = st.columns(2)
-            with c1:
-                # Dokumenti
-                dok_df = run_query("SELECT id, naziv FROM vrsta_dokumenta")
-                if not dok_df.empty:
-                    dok_dict = {row['naziv']: row['id'] for i, row in dok_df.iterrows()}
-                    ng_dok_tip = st.selectbox("Vrsta dokumenta", list(dok_dict.keys()))
-                else:
-                    ng_dok_tip = None
-                    
-                ng_dok_broj = st.text_input("Broj dokumenta")
-                
-            with c2:
-                # Države i Gradovi
-                drz_df = run_query("SELECT id, naziv FROM drzava ORDER BY naziv")
-                if not drz_df.empty:
-                    drz_dict = {row['naziv']: row['id'] for i, row in drz_df.iterrows()}
-                    ng_drzava = st.selectbox("Država", list(drz_dict.keys()), index=0)
-                    
-                    # Filtriraj gradove po odabranoj državi (Ovo zahtijeva rerun da bi bilo savršeno dinamično, 
-                    # ali za jednostavnost učitavamo gradove odabrane države)
-                    grad_df = run_query("SELECT id, naziv FROM grad WHERE drzava_id = %s ORDER BY naziv", (drz_dict[ng_drzava],))
-                    if grad_df.empty:
-                        grad_dict = {"Nema gradova": 1} # Fallback
-                    else:
-                        grad_dict = {row['naziv']: row['id'] for i, row in grad_df.iterrows()}
-                    ng_grad = st.selectbox("Grad", list(grad_dict.keys()))
-                else:
-                    ng_drzava = None
-                    ng_grad = None
+        st.info("Unesite podatke o gostu.")
 
+        # -- FORMA JE UKLONJENA ZA SELECTBOXEVE DA BUDU REAKTIVNI --
+        
+        ng_ime = st.text_input("Ime")
+        ng_prezime = st.text_input("Prezime")
+        
+        col_dok, col_geo = st.columns(2)
+        
+        with col_dok:
+            # Dokumenti
+            dok_df = run_query("SELECT id, naziv FROM vrsta_dokumenta")
+            if not dok_df.empty:
+                dok_dict = {row['naziv']: row['id'] for i, row in dok_df.iterrows()}
+                ng_dok_tip = st.selectbox("Vrsta dokumenta", list(dok_dict.keys()))
+            else:
+                ng_dok_tip = None
+                
+            ng_dok_broj = st.text_input("Broj dokumenta")
             ng_adresa = st.text_input("Adresa")
+
+        with col_geo:
+            # 1. Države - dodan key="drzava_select" da bude jedinstven
+            drz_df = run_query("SELECT id, naziv FROM drzava ORDER BY naziv")
             
-            if st.form_submit_button("Spremi Gosta"):
-                if ng_dok_tip and ng_drzava and ng_grad:
-                    try:
-                        sql_gost = """
-                            INSERT INTO gost (ime, prezime, vrsta_dokumenta_id, broj_dokumenta, prebivaliste_grad_id, prebivaliste_adresa, drzavljanstvo_id)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s)
-                        """
-                        params_gost = (ng_ime, ng_prezime, dok_dict[ng_dok_tip], ng_dok_broj, grad_dict[ng_grad], ng_adresa, drz_dict[ng_drzava])
-                        succ, msg = run_action(sql_gost, params_gost)
-                        if succ:
-                            st.success(f"Gost {ng_ime} {ng_prezime} uspješno dodan!")
-                            time.sleep(1)
-                            st.rerun()
-                        else:
-                            st.error(f"Greška: {msg}")
-                    except Exception as e:
-                        st.error(f"Greška: {e}")
+            if not drz_df.empty:
+                drz_dict = {row['naziv']: row['id'] for i, row in drz_df.iterrows()}
+                
+                # Ovdje korisnik bira državu
+                ng_drzava = st.selectbox("Država", list(drz_dict.keys()), index=0, key="drzava_select")
+                
+                # --- DEBUG: OVO ĆE TI POKAZATI ŠTO APLIKACIJA VIDI ---
+                odabrani_id_drzave = drz_dict[ng_drzava]
+                # st.caption(f"Debug: Odabran ID države je: {odabrani_id_drzave}") 
+                # -----------------------------------------------------
+
+                # 2. Gradovi - filtriraju se po odabranom ID-u
+                grad_df = run_query("SELECT id, naziv FROM grad WHERE drzava_id = %s ORDER BY naziv", [odabrani_id_drzave])
+                
+                if grad_df.empty:
+                    st.warning(f"Nema gradova u bazi za {ng_drzava}.")
+                    grad_dict = {}
+                    ng_grad = None
                 else:
-                    st.error("Nedostaju podaci za šifarnike (Država/Grad/Dokument).")
+                    grad_dict = {row['naziv']: row['id'] for i, row in grad_df.iterrows()}
+                    ng_grad = st.selectbox("Grad", list(grad_dict.keys()), key="grad_select")
+            else:
+                st.error("Tablica 'drzava' je prazna!")
+                ng_drzava = None
+                ng_grad = None
+
+        st.markdown("---")
+        
+        # Gumb za spremanje je odvojen i on šalje podatke na kraju
+        if st.button("💾 Spremi Gosta", type="primary"):
+            # Provjera
+            if ng_ime and ng_prezime and ng_dok_broj and ng_grad and ng_drzava:
+                try:
+                    sql_gost = """
+                        INSERT INTO gost (ime, prezime, vrsta_dokumenta_id, broj_dokumenta, prebivaliste_grad_id, prebivaliste_adresa, drzavljanstvo_id)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """
+                    # Priprema ID-eva
+                    id_dok = dok_dict[ng_dok_tip]
+                    id_grad = grad_dict[ng_grad]
+                    id_drzava = drz_dict[ng_drzava]
+                    
+                    params_gost = (ng_ime, ng_prezime, id_dok, ng_dok_broj, id_grad, ng_adresa, id_drzava)
+                    
+                    succ, msg = run_action(sql_gost, params_gost)
+                    
+                    if succ:
+                        st.toast(f"✅ Gost {ng_ime} {ng_prezime} uspješno dodan!", icon='👤')
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.error(f"Greška baze: {msg}")
+                except Exception as e:
+                    st.error(f"Sistemska greška: {e}")
+            else:
+                st.warning("Molimo ispunite sva polja.")
 
 # =============================================================================
 # MODUL 2: RESTORAN - NARUDŽBE
@@ -658,6 +691,9 @@ elif menu == "📈 IZVJEŠTAJI (Financije & Zalihe)":
         # Izvršavanje upita
         try:
             df_racuni = run_query(sql_base, params)
+
+            if not df_racuni.empty:
+                df_racuni['rezervacija_id'] = df_racuni['rezervacija_id'].astype('Int64').astype(str).replace('<NA>', '-')
             
             # Prikaz liste računa
             st.dataframe(

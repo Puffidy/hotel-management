@@ -566,3 +566,41 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- ------------------------------------------------------------
+
+DROP TRIGGER IF EXISTS trg_check_datumi_rezervacije;
+
+DELIMITER //
+
+CREATE TRIGGER trg_check_datumi_rezervacije
+BEFORE INSERT ON rezervacija
+FOR EACH ROW
+BEGIN
+    -- Provjera: Datum odlaska mora biti nakon datuma dolaska
+    IF NEW.kraj_datum <= NEW.pocetak_datum THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Greška: Datum odlaska mora biti nakon datuma dolaska!';
+    END IF;
+END //
+
+DELIMITER ;
+
+-- -------------------------------------------------------------
+
+DROP TRIGGER IF EXISTS trg_check_datumi_rezervacije_update;
+
+DELIMITER //
+
+CREATE TRIGGER trg_check_datumi_rezervacije_update
+BEFORE UPDATE ON rezervacija
+FOR EACH ROW
+BEGIN
+    -- Provjera vrijedi i kod izmjene podataka
+    IF NEW.kraj_datum <= NEW.pocetak_datum THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Greška: Datum odlaska mora biti nakon datuma dolaska!';
+    END IF;
+END //
+
+DELIMITER ;
