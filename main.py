@@ -312,9 +312,9 @@ if menu == "📅 RECEPCIJA (Rezervacije)":
                 r_id = rez_dict_sup[odabrana_rez_sup]
                 g_id = gost_dict_sup[odabrani_gost_sup]
                 
-                success, msg = run_action("proc_dodaj_suputnika", [r_id, g_id], is_procedure=True)
+                success, msg = run_action("sp_dodaj_gosta_na_rezervaciju", [r_id, g_id], is_procedure=True)
                 if success:
-                    st.success("Suputnik dodan!")
+                    st.success("Gost dodan!")
                 else:
                     st.error(msg)
         else:
@@ -441,14 +441,14 @@ elif menu == "🍽️ RESTORAN (Narudžbe & Kuhinja)":
         st.subheader("Dodaj na narudžbu")
         
         # --- ZAMJENA SIROVOG SQL-a POGLEDOM ---
-        otvorene = run_query("SELECT * FROM view_lista_otvorenih_narudzbi ORDER BY broj_stola")
-        
+        otvorene = run_query("SELECT * FROM view_otvorene_narudzbe_total ORDER BY broj_stola")
+
         if otvorene.empty:
             st.warning("Nema otvorenih narudžbi.")
         else:
-            # Ažuriramo dict comprehension da uključuje i lokaciju radi lakšeg snalaženja
+            # PAŽNJA: U view_otvorene_narudzbe_total ID se zove 'narudzba_id', a ne 'id'
             narudzba_dict = {
-                f"Narudžba #{row['id']} (Stol {row['broj_stola']} - {row['lokacija']})": row['id'] 
+                f"Narudžba #{row['narudzba_id']} (Stol {row['broj_stola']} - {row['lokacija']})": row['narudzba_id'] 
                 for i, row in otvorene.iterrows()
             }
             odabrana_narudzba_lbl = st.selectbox("Odaberi narudžbu", list(narudzba_dict.keys()))
@@ -541,6 +541,8 @@ elif menu == "🍽️ RESTORAN (Narudžbe & Kuhinja)":
                     
                     if poruka_iz_baze and "Greška" in poruka_iz_baze:
                         return f"SQL Error [Logic]: {poruka_iz_baze}"
+                    
+                    return poruka_iz_baze
                     
                 except mysql.connector.Error as err:
                     return f"SQL Error [{err.errno}]: {err.msg}"
@@ -709,7 +711,7 @@ elif menu == "📊 STANJE (Sobe i Logovi)":
 
         st.markdown("---")
         st.subheader("Povijest promjena (Logovi)")
-        logs = run_query("SELECT * FROM log_rezervacije ORDER BY vrijeme_promjene DESC LIMIT 20")
+        logs = run_query("SELECT * FROM log_rezervacije ORDER BY vrijeme_promjene DESC")
         st.dataframe(logs, use_container_width=True)
 
         # Gumb za čišćenje starih logova
@@ -717,15 +719,27 @@ elif menu == "📊 STANJE (Sobe i Logovi)":
             try:
                 conn = get_connection()
                 cursor = conn.cursor()
+
                 cursor.execute("CALL ocisti_stare_log_rez(90, @obrisano)")
+
+                if cursor.with_rows:
+                    cursor.fetchall()
+
+                while cursor.nextset():
+                    if cursor.with_rows:
+                        cursor.fetchall()
+
                 cursor.execute("SELECT @obrisano")
                 broj = cursor.fetchone()[0]
+
                 conn.commit()
                 st.success(f"Obrisano {broj} starih zapisa iz loga.")
+
                 cursor.close()
                 conn.close()
                 time.sleep(1)
                 st.rerun()
+
             except mysql.connector.Error as err:
                 st.error(f"SQL Error [{err.errno}]: {err.msg}")
             except Exception as e:
@@ -765,17 +779,26 @@ elif menu == "📊 STANJE (Sobe i Logovi)":
                     z_id = int(sobarica_dict[odabrana_sobarica_lbl])
                     
                     try:
-                        # Poziv procedure 'proc_evidentiraj_ciscenje'
-                        success, msg = run_action("proc_evidentiraj_ciscenje", [s_id, opis_stete, z_id], is_procedure=True)
+                       
+                        v_ima_stete = 1 if opis_stete else 0
+                        
+                        
+                        insert_log_sql = """
+                            INSERT INTO ciscenje_dnevni_nalog (zaposlenik_id, rezervacija_id, prijavljena_steta, opis_stete, obavljeno)
+                            VALUES (%s, (SELECT id FROM rezervacija WHERE soba_id=%s ORDER BY kraj_datum DESC LIMIT 1), %s, %s, 1)
+                        """
+                        run_action(insert_log_sql, [z_id, s_id, v_ima_stete, opis_stete])
+
+                        success, msg = run_action("sp_ociscena_soba", [s_id], is_procedure=True)
                         
                         if success:
                             st.toast(f"✅ Soba {odabrana_soba_clean} je čista! (Šteta evidentirana: {'DA' if opis_stete else 'NE'})")
                             time.sleep(1.5)
                             st.rerun()
                         else:
-                            st.error(f"Greška: {msg}")
+                            st.error(f"Greška kod promjene statusa: {msg}")
                     except Exception as e:
-                         st.error(f"Sistemska greška: {e}")
+                            st.error(f"Sistemska greška: {e}")
 
     # --- TAB 3: ODRŽAVANJE ---
     with tab_odrzavanje:
@@ -790,7 +813,7 @@ elif menu == "📊 STANJE (Sobe i Logovi)":
             with st.form("prijava_kvara"):
                 
                 # 1. Odabir sobe
-                sve_sobe = run_query("SELECT * FROM view_lista_soba_jednostavna")
+                sve_sobe = run_query("SELECT id, broj FROM view_sve_sobe_dropdown ORDER BY broj")
                 soba_dict_kvar = {f"Soba {row['broj']}": row['id'] for i, row in sve_sobe.iterrows()}
                 odabrana_soba_kvar = st.selectbox("Soba:", list(soba_dict_kvar.keys()))
                 

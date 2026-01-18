@@ -642,45 +642,8 @@ END //
 
 DELIMITER ;
 
--- ---------------------------------------------------
--- 4. okidac unos log rezervacija
-
-DROP TRIGGER IF EXISTS trg_unos_log_rezervacija;
-
-DELIMITER //
-
-CREATE TRIGGER trg_unos_log_rezervacija
-AFTER INSERT ON rezervacija
-FOR EACH ROW
-BEGIN
-    INSERT INTO log_rezervacije (rezervacija_id, stari_status, novi_status, korisnik_db)
-    VALUES (NEW.id, 'NOVA', NEW.status, USER());
-END //
-
-DELIMITER ;
-
--- --------------------------------------------------
--- 5. okidac azuriranje log rezrvacija
-
-DROP TRIGGER IF EXISTS trg_azuriranje_log_rezervacija;
-
-DELIMITER //
-
-CREATE TRIGGER trg_azuriranje_log_rezervacija
-AFTER UPDATE ON rezervacija
-FOR EACH ROW
-BEGIN
-    -- Bilježimo samo ako se status stvarno promijenio
-    IF OLD.status != NEW.status THEN
-        INSERT INTO log_rezervacije (rezervacija_id, stari_status, novi_status, korisnik_db)
-        VALUES (NEW.id, OLD.status, NEW.status, USER());
-    END IF;
-END //
-
-DELIMITER ;
-
 -- ---------------------------------------
--- 6. okidac sprijeci rezervaciju ako je kvar ili ciscenje
+-- 4. okidac sprijeci rezervaciju ako je kvar ili ciscenje
 
 DROP TRIGGER IF EXISTS trg_sprijeci_rezervaciju_kvar;
 

@@ -194,13 +194,13 @@ CREATE OR REPLACE VIEW view_otvorene_narudzbe_total AS
 SELECT 
     rn.id AS narudzba_id,
     rs.broj_stola,
-    -- Baza sama računa total
+    rs.lokacija,   
     COALESCE(SUM(rst.kolicina * rst.cijena_u_trenutku), 0) AS total_iznos
 FROM restoran_narudzba rn
 JOIN restoran_stol rs ON rn.restoran_stol_id = rs.id
 LEFT JOIN restoran_stavka rst ON rn.id = rst.narudzba_id
 WHERE rn.status = 'OTVORENA'
-GROUP BY rn.id, rs.broj_stola;
+GROUP BY rn.id, rs.broj_stola, rs.lokacija;
 
 -- --------------------------------------------
 -- 7. pogled soba za ciscenje
@@ -263,14 +263,6 @@ FROM zaposlenik z
 JOIN odjel o ON z.odjel_id = o.id
 WHERE o.naziv = 'Odrzavanje';
 
--- ------------------------------------------------------------------
--- 12. pogled soba
-
-CREATE OR REPLACE VIEW view_lista_soba_jednostavna AS
-SELECT id, broj 
-FROM soba 
-ORDER BY broj;
-
 -- ---------------------------------------------------
 -- 13. pogled status soba boje
 
@@ -303,17 +295,6 @@ FROM soba s
 JOIN tip_sobe t ON s.tip_sobe_id = t.id
 ORDER BY s.broj;
 
--- ------------------------------------
--- 15. pogled otvorenih narudzbi
-
-CREATE OR REPLACE VIEW view_lista_otvorenih_narudzbi AS
-SELECT 
-    rn.id, 
-    rs.broj_stola,
-    rs.lokacija 
-FROM restoran_narudzba rn
-JOIN restoran_stol rs ON rn.restoran_stol_id = rs.id
-WHERE rn.status = 'OTVORENA';
 
 -- -------------------------------------
 -- 16. pogled stavke narudzbe
