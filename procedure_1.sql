@@ -347,13 +347,14 @@ CREATE PROCEDURE proc_kreiraj_rezervaciju(
     IN p_datum_dolaska DATE,
     IN p_datum_odlaska DATE,
     IN p_broj_osoba INT,
-    IN p_napomena TEXT
+    IN p_napomena TEXT,
+    IN p_zaposlenik_id INT
 )
 BEGIN
     INSERT INTO rezervacija 
     (gost_nositelj_id, zaposlenik_id, soba_id, promocija_id, pocetak_datum, kraj_datum, broj_osoba, status, napomena)
     VALUES 
-    (p_gost_id, 1, p_soba_id, p_promocija_id, p_datum_dolaska, p_datum_odlaska, p_broj_osoba, 'POTVRDJENA', p_napomena);
+    (p_gost_id, p_zaposlenik_id, p_soba_id, p_promocija_id, p_datum_dolaska, p_datum_odlaska, p_broj_osoba, 'POTVRDJENA', p_napomena);
 END //
 
 DELIMITER ;
@@ -527,4 +528,28 @@ BEGIN
         VALUES (p_rezervacija_id, p_gost_id, 'GOST');
     END IF;
 END //
+DELIMITER ;
+
+-- ---------------------------------------
+-- 13. procedura prijave kvara
+
+DELIMITER //
+
+CREATE PROCEDURE proc_prijavi_kvar(
+    IN p_zaposlenik_id INT,
+    IN p_soba_id INT,
+    IN p_opis_kvara TEXT,
+    IN p_korisnik_kriv INT -- 0 ili 1 (Boolean)
+)
+BEGIN
+    -- A) Unos u dnevnik servisa
+    INSERT INTO servis_dnevni_nalog (zaposlenik_id, soba_id, opis, korisnik_placa, datum_naloga, rijeseno)
+    VALUES (p_zaposlenik_id, p_soba_id, p_opis_kvara, p_korisnik_kriv, NOW(), 0);
+
+    -- B) Automatsko stavljanje sobe "IZVAN FUNKCIJE"
+    UPDATE soba 
+    SET status = 'IZVAN_FUNKCIJE' 
+    WHERE id = p_soba_id;
+END //
+
 DELIMITER ;
