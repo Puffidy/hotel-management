@@ -921,7 +921,7 @@ elif menu == "📊 STANJE (Sobe i Logovi)":
 # =============================================================================
 elif menu == "📈 IZVJEŠTAJI (Financije & Zalihe)":
     
-    tab_zalihe, tab_racuni = st.tabs(["📦 Skladište (Zalihe)", "💶 Financije (Računi)"])
+    tab_zalihe, tab_racuni, tab_pdv = st.tabs(["📦 Skladište (Zalihe)", "💶 Financije (Računi)", "🏛️ PDV (Obaveze)"])
     
     # --- TAB 1: ZALIHE ---
     with tab_zalihe:
@@ -1063,3 +1063,26 @@ elif menu == "📈 IZVJEŠTAJI (Financije & Zalihe)":
                 
         except Exception as e:
             st.error(f"Greška: Moguće da pogled 'pregled_svih_racuna' još nije kreiran u bazi.\nDetalji: {e}")
+
+    with tab_pdv:
+        st.header("Izvještaj o PDV obavezama")
+        
+        pdv_godina = st.number_input(
+            "Godina:", 
+            min_value=2000, 
+            max_value=datetime.today().year, 
+            value=datetime.today().year
+        )
+        
+        if st.button("Generiraj Izvještaj o PDV-u"):
+            try:
+                pdv_df = run_query("SELECT pdv_za_godinu(%s)", [pdv_godina])
+                
+                if pdv_df.empty or pdv_df.iloc[0, 0] is None:
+                    st.info("Nema podataka za odabranu godinu.")
+                else:
+                    iznos_pdv = pdv_df.iloc[0, 0]
+                    st.success(f"PDV za godinu {pdv_godina}: {iznos_pdv:.2f} €")
+                    
+            except Exception as e:
+                st.error(f"Greška pri generiranju izvještaja: {e}")
