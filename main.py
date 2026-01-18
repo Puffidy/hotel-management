@@ -37,16 +37,18 @@ def run_action(query, params=None, is_procedure=False):
         
         conn.commit()
         return True, "Uspješno izvršeno!"
+        
     except mysql.connector.Error as err:
-        # Čišćenje poruke greške (mičemo SQL kodove grešaka ako je moguće)
-        msg = str(err.msg)
-        if "Greška:" in msg:
-            return False, msg
-        else:
-            return False, f"Baza odbija: {msg}"
+
+        raw_error_message = f"SQL Error [{err.errno}]: {err.msg}"
+        return False, raw_error_message
+        
     finally:
-        cursor.close()
-        conn.close()
+        # Provjera prije zatvaranja za slučaj da konekcija nije uspjela
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if 'conn' in locals() and conn.is_connected():
+            conn.close()
 
 # -----------------------------------------------------------------------------
 # 2. UI IZGLED I GLAVNI IZBORNIK
