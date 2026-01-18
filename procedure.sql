@@ -195,7 +195,6 @@ CALL sp_primijeni_promociju(1, 1);  -- rezervacija_id = 1, promocija_id = 1
 
 
 -- Procedura Alma - Dohvati slobodne sobe za zadani broj osoba i datumski interval
-DROP PROCEDURE IF EXISTS dohvati_slobodne_sobe;
 DELIMITER //
 
 CREATE PROCEDURE dohvati_slobodne_sobe(IN p_broj_osoba INT, IN p_datum_dolaska DATE, IN p_datum_odlaska DATE)
@@ -213,7 +212,6 @@ CALL dohvati_slobodne_sobe(3, '2026-08-01', '2026-08-03');
 
 
 -- Proc Alma - 
-DROP PROCEDURE IF EXISTS generiranje_finalnog_racuna_za_rezervaciju;
 DELIMITER //
 CREATE PROCEDURE generiranje_finalnog_racuna_za_rezervaciju(IN p_rezervacija_id INT, IN p_nacin_placanja VARCHAR(25))
 BEGIN
@@ -258,3 +256,4 @@ BEGIN
 
 END //
 
+DELIMITER ;

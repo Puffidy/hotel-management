@@ -2,7 +2,6 @@ USE novi_projekt;
 
 -- ---------------------------------------------------------------------------------------------------
 -- 1. Otvaranje narudžbe u restoranu
-DROP PROCEDURE proc_otvori_narudzbu;
 
 DELIMITER //
 
@@ -31,7 +30,6 @@ DELIMITER ;
 
 -- --------------------------------------------------------------------------------------------
 -- 2. Dodavanje stavki na narudžbu
-DROP PROCEDURE proc_dodaj_stavku;
 
 DELIMITER //
 
@@ -63,7 +61,6 @@ DELIMITER ;
  -- ---------------------------------------------------------------
  -- 3. Početak pripreme narudžbe
  
- DROP PROCEDURE IF EXISTS proc_zapocni_pripremu;
  
  DELIMITER //
  
@@ -127,7 +124,7 @@ DELIMITER ;
  -- ---------------------------------------------------------------
  -- 4. Posluživanje narudžbe
  
- DROP PROCEDURE proc_posluzi_stavku;
+
  
  DELIMITER //
  
@@ -197,8 +194,6 @@ DELIMITER ;
 
  -- ---------------------------------------------------------------
  -- 5. Naplata naruđbe
- 
-DROP PROCEDURE IF EXISTS proc_naplati_narudzbu;
 
 DELIMITER //
 
@@ -337,7 +332,6 @@ DELIMITER ;
 
 -- -----------------------------------------------
 -- 6. Procedura za kreiranje nove rezervacije
-DROP PROCEDURE IF EXISTS proc_kreiraj_rezervaciju;
 DELIMITER //
 
 CREATE PROCEDURE proc_kreiraj_rezervaciju(
@@ -361,7 +355,6 @@ DELIMITER ;
 
 -- ----------------------------------------------------
 -- 7. Procedura za unos novog gosta
-DROP PROCEDURE IF EXISTS proc_kreiraj_gosta;
 
 DELIMITER //
 
@@ -385,7 +378,7 @@ DELIMITER ;
 
 -- ------------------------------------------------
 -- 8. Procedura za Check-In
-DROP PROCEDURE IF EXISTS proc_rezervacija_check_in;
+
 
 DELIMITER //
 
@@ -403,7 +396,6 @@ DELIMITER ;
 
 -- -------------------------------------------
 -- 9. Procedura za Check-Out
-DROP PROCEDURE IF EXISTS proc_rezervacija_check_out;
 
 DELIMITER //
 
@@ -421,7 +413,6 @@ DELIMITER ;
 
 -- -----------------------------------------------
 -- 10. Dodavanje usluge na sobu
-DROP PROCEDURE IF EXISTS proc_dodaj_uslugu_na_sobu;
 
 DELIMITER //
 
@@ -466,6 +457,66 @@ BEGIN
 
 END //
 
+DELIMITER ;
+
+-- -----------------------------------
+-- 11. Čišćenje i evidentiranje štete
+
+DELIMITER //
+CREATE PROCEDURE proc_evidentiraj_ciscenje(
+    IN p_soba_id INT,
+    IN p_opis_stete TEXT,
+    IN p_zaposlenik_id INT
+)
+BEGIN
+    DECLARE v_rezervacija_id INT;
+    DECLARE v_ima_stete BOOLEAN DEFAULT 0;
+    
+    -- 1. Nađi zadnju rezervaciju za tu sobu (čak i ako je upravo završila)
+    SELECT id INTO v_rezervacija_id 
+    FROM rezervacija 
+    WHERE soba_id = p_soba_id 
+    ORDER BY kraj_datum DESC LIMIT 1;
+    
+    -- 2. Odredi ima li štete
+    IF p_opis_stete IS NOT NULL AND p_opis_stete != '' THEN
+        SET v_ima_stete = 1;
+    END IF;
+    
+    -- 3. Upiši u dnevnik čišćenja (ako nema rezervacije, stavi NULL)
+    INSERT INTO ciscenje_dnevni_nalog (zaposlenik_id, rezervacija_id, prijavljena_steta, opis_stete, obavljeno)
+    VALUES (p_zaposlenik_id, v_rezervacija_id, v_ima_stete, p_opis_stete, 1);
+    
+    -- 4. Pozovi postojeću logiku za promjenu statusa sobe
+    -- postojeća procedura, samo je zovemo iznutra
+    CALL sp_ociscena_soba(p_soba_id);
+    
+END //
+DELIMITER ;
+
+-- ------------------------------------
+-- 12. dodavanje suputnika
+
+DELIMITER //
+CREATE PROCEDURE proc_dodaj_suputnika(
+    IN p_rezervacija_id INT,
+    IN p_gost_id INT
+)
+BEGIN
+    DECLARE v_postoji INT;
+    
+    -- Provjeri je li gost već na toj rezervaciji
+    SELECT COUNT(*) INTO v_postoji 
+    FROM rezervacija_gost 
+    WHERE rezervacija_id = p_rezervacija_id AND gost_id = p_gost_id;
+    
+    IF v_postoji > 0 THEN
+        SIGNAL SQLSTATE '45003' SET MESSAGE_TEXT = 'Gost je već dodan na ovu rezervaciju.';
+    ELSE
+        INSERT INTO rezervacija_gost (rezervacija_id, gost_id, uloga)
+        VALUES (p_rezervacija_id, p_gost_id, 'GOST');
+    END IF;
+END //
 DELIMITER ;
 
 -- ---------------------------------------

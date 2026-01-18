@@ -1036,11 +1036,36 @@ elif menu == "📈 IZVJEŠTAJI (Financije & Zalihe)":
             if not df_racuni.empty:
                 df_racuni['rezervacija_id'] = df_racuni['rezervacija_id'].astype('Int64').astype(str).replace('<NA>', '-')
             
-            # Prikaz liste računa
-            st.dataframe(
-                df_racuni.style.format({"iznos_ukupno": "{:.2f} €"}),
-                use_container_width=True
-            )
+            col_dataframe, col_actions = st.columns([4, 1])
+
+            with col_dataframe:
+                # Prikaz liste računa
+                st.dataframe(
+                    df_racuni.style.format({"iznos_ukupno": "{:.2f} €"}),
+                    use_container_width=True
+                )
+            with col_actions:
+                st.write("### Akcije")
+                if not df_racuni.empty:
+                    otvoreni_racuni = df_racuni[df_racuni['status_racuna'] == 'OTVOREN']
+                    if otvoreni_racuni.empty:
+                        st.info("Nema otvorenih računa za plaćanje.")
+                    else:
+                        racun_dict = {f"Račun #{row['racun_id']}": row['rezervacija_id'] for i, row in otvoreni_racuni.iterrows()}
+                        odabrani_racun_akcija = st.selectbox("Označi račun kao PLAĆENO:", list(racun_dict.keys()))
+                        nacin_placanja = st.selectbox("Način plaćanja:", ["KARTICA", "GOTOVINA", "VIRMANSKI", "ONLINE"])
+                        
+                        if st.button("✅ Označi kao PLAĆENO"):
+                            racun_id_za_placanje = int(racun_dict[odabrani_racun_akcija])
+                            
+                            success, msg = run_action("generiranje_finalnog_racuna_za_rezervaciju", [racun_id_za_placanje, nacin_placanja], is_procedure=True)
+                            
+                            if success:
+                                st.toast(f"Račun #{racun_id_za_placanje} je sada PLAĆEN!", icon='💶')
+                                time.sleep(1)
+                                st.rerun()
+                            else:
+                                st.error(f"Greška: {msg}")
             
             st.markdown("---")
             st.subheader("🔍 Detalji Računa")
