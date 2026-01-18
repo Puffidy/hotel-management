@@ -200,7 +200,7 @@ DELIMITER //
 
 CREATE PROCEDURE dohvati_slobodne_sobe(IN p_broj_osoba INT, IN p_datum_dolaska DATE, IN p_datum_odlaska DATE)
 BEGIN
-    SELECT broj, kapacitet_osoba, naziv AS tip_sobe
+    SELECT broj, kapacitet_osoba, naziv AS tip_sobe, CONCAT(izracunaj_cijenu_smjestaja(soba.id, p_datum_dolaska, p_datum_odlaska), ' €') AS ukupna_cijena
     FROM soba
     LEFT JOIN tip_sobe ON soba.tip_sobe_id = tip_sobe.id
     WHERE provjeri_dostupnost_sobe(soba.id, p_datum_dolaska, p_datum_odlaska) = 1
