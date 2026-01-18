@@ -115,6 +115,7 @@ SELECT *FROM neplaceni_racuni;
 
 
 -- -----------------------------------------
+-- 1. pregled svih racuna
 
 CREATE OR REPLACE VIEW pregled_svih_racuna AS
 SELECT 
@@ -125,14 +126,14 @@ SELECT
     r.nacin_placanja,
     r.datum_izdavanja,
     r.rezervacija_id,
-    -- Spajamo ime i prezime gosta. 
-    -- Ako je račun iz Restorana (nema rezervacije), ovo će biti NULL.
+    
     COALESCE(CONCAT(g.ime, ' ', g.prezime), 'Vanjski Gost') AS gost_nositelj
 FROM racun r
 LEFT JOIN rezervacija rez ON r.rezervacija_id = rez.id
 LEFT JOIN gost g ON rez.gost_nositelj_id = g.id;
 
 -- ---------------------------------------------
+-- 2. pregled zaliha skladista
 
 CREATE OR REPLACE VIEW pregled_zaliha_skladiste AS
 SELECT 
@@ -141,11 +142,12 @@ SELECT
     a.stanje_zaliha,
     a.jedinica_mjere,
     a.nabavna_cijena,
-    -- Baza odmah računa koliko novaca imamo u robi
+    
     (a.stanje_zaliha * a.nabavna_cijena) AS ukupna_vrijednost
 FROM artikl a;
 
 -- ---------------------------------------
+-- 3. pregled svih rezrvacija
 
 CREATE OR REPLACE VIEW pregled_svih_rezervacija AS
 SELECT 
@@ -162,13 +164,17 @@ JOIN gost g ON r.gost_nositelj_id = g.id
 JOIN soba s ON r.soba_id = s.id
 ORDER BY r.pocetak_datum DESC;
 
--- 1. Pogled za Meni (Samo hrana i piće za dropdown)
+-- -------------------------------------------
+-- 4. pogled za meni
+
 CREATE OR REPLACE VIEW view_meni_restoran AS
 SELECT id, naziv, cijena_trenutna, kategorija_id
 FROM usluga 
 WHERE kategorija_id IN (1, 2); -- 1=Hrana, 2=Piće
 
--- 2. Pogled za Kuhinju (Display narudžbi)
+-- ------------------------------------------------
+-- 5. pogled narudzbi kuhinja
+
 CREATE OR REPLACE VIEW view_kuhinja_display AS
 SELECT 
     rs.id AS stavka_id,
@@ -176,12 +182,14 @@ SELECT
     u.naziv AS naziv_jela,
     rs.kolicina,
     rs.status_pripreme,
-    u.kategorija_id -- Treba nam za ikonu (burger/pivo)
+    u.kategorija_id
 FROM restoran_stavka rs
 JOIN usluga u ON rs.usluga_id = u.id
 WHERE rs.status_pripreme IN ('NARUCENO', 'PRIPREMA');
 
--- 3. Pogled za Otvorene Narudžbe i Totale (Za naplatu)
+-- -------------------------------------------------
+-- 6. pogled otvorene narudzbe
+
 CREATE OR REPLACE VIEW view_otvorene_narudzbe_total AS
 SELECT 
     rn.id AS narudzba_id,
@@ -194,14 +202,18 @@ LEFT JOIN restoran_stavka rst ON rn.id = rst.narudzba_id
 WHERE rn.status = 'OTVORENA'
 GROUP BY rn.id, rs.broj_stola;
 
--- 4. Pogled za Domaćinstvo (Prljave sobe)
+-- --------------------------------------------
+-- 7. pogled soba za ciscenje
+
 CREATE OR REPLACE VIEW view_sobe_za_ciscenje AS
 SELECT s.id, s.broj, ts.naziv AS tip_sobe, s.status
 FROM soba s
 JOIN tip_sobe ts ON s.tip_sobe_id = ts.id
 WHERE s.status = 'CISCENJE';
 
--- 1. Pogled za aktivne rezervacije (Samo gosti koji su trenutno u sobi)
+-- --------------------------------------------------------------
+-- 8. pogled aktivnih rezervacija
+
 CREATE OR REPLACE VIEW view_aktivne_rezervacije AS
 SELECT 
     r.id AS rezervacija_id, 
@@ -213,13 +225,17 @@ JOIN soba s ON r.soba_id = s.id
 JOIN gost g ON r.gost_nositelj_id = g.id
 WHERE r.status = 'U_TIJEKU';
 
--- 2. Pogled za dodatne usluge (Samo Wellness i Ostalo)
+-- -------------------------------------------------------
+-- 9. pogled dodatne usluge
+
 CREATE OR REPLACE VIEW view_dodatne_usluge AS
 SELECT id, naziv, cijena_trenutna 
 FROM usluga 
 WHERE kategorija_id IN (3, 4); -- 3=Wellness, 4=Ostalo
 
--- 1. POGLED ZA AKTIVNE KVAROVE (Zamjenjuje onaj veliki JOIN u Pythonu)
+-- ----------------------------------------------------
+-- 10. aktivni kvarovi
+
 CREATE OR REPLACE VIEW view_aktivni_kvarovi AS
 SELECT 
     n.id AS nalog_id,
@@ -234,7 +250,9 @@ JOIN zaposlenik z ON n.zaposlenik_id = z.id
 JOIN soba s ON n.soba_id = s.id
 WHERE n.rijeseno = 0;
 
--- 2. POGLED ZA OSOBLJE ODRŽAVANJA (Da ne hardcodiramo odjel_id = 3 u Pythonu)
+-- ------------------------------------------------------------
+-- 11. pogled osoblja odrzavanja
+
 CREATE OR REPLACE VIEW view_osoblje_odrzavanja AS
 SELECT 
     z.id, 
@@ -243,20 +261,24 @@ SELECT
     CONCAT(z.ime, ' ', z.prezime) AS puno_ime
 FROM zaposlenik z
 JOIN odjel o ON z.odjel_id = o.id
-WHERE o.naziv = 'Odrzavanje'; -- Ili o.id = 3, ali po nazivu je sigurnije
+WHERE o.naziv = 'Odrzavanje';
 
--- 3. POGLED ZA LISTU SVIH SOBA (Jednostavan, ali koristan za dropdown menije)
+-- ------------------------------------------------------------------
+-- 12. pogled soba
+
 CREATE OR REPLACE VIEW view_lista_soba_jednostavna AS
 SELECT id, broj 
 FROM soba 
 ORDER BY broj;
 
--- 2. POGLED: STATUSI S BOJAMA (UI logika u bazi!)
+-- ---------------------------------------------------
+-- 13. pogled status soba boje
+
 CREATE OR REPLACE VIEW view_status_soba_boje AS
 SELECT 
     s.id,
     s.broj,
-    ts.trenutno_stanje AS stanje, -- Koristimo tvoj postojeći view 'trenutno_stanje_soba' ako želiš, ili direktno tablicu
+    ts.trenutno_stanje AS stanje,
     CASE 
         WHEN ts.trenutno_stanje = 'ZAUZETA' THEN '#ffcdd2'       -- Crvena
         WHEN ts.trenutno_stanje = 'SLOBODNA' THEN '#c8e6c9'      -- Zelena
@@ -265,5 +287,75 @@ SELECT
         ELSE '#ffffff'
     END AS hex_boja
 FROM soba s
--- Spajamo se na tvoj postojeći view koji računa je li soba zauzeta
+
 JOIN trenutno_stanje_soba ts ON s.id = ts.soba_id;
+
+-- ------------------------------
+-- 14. pogled soba dropdown
+
+CREATE OR REPLACE VIEW view_sve_sobe_dropdown AS
+SELECT 
+    s.id, 
+    s.broj, 
+    t.naziv AS tip_sobe, 
+    s.status
+FROM soba s
+JOIN tip_sobe t ON s.tip_sobe_id = t.id
+ORDER BY s.broj;
+
+-- ------------------------------------
+-- 15. pogled otvorenih narudzbi
+
+CREATE OR REPLACE VIEW view_lista_otvorenih_narudzbi AS
+SELECT 
+    rn.id, 
+    rs.broj_stola,
+    rs.lokacija 
+FROM restoran_narudzba rn
+JOIN restoran_stol rs ON rn.restoran_stol_id = rs.id
+WHERE rn.status = 'OTVORENA';
+
+-- -------------------------------------
+-- 16. pogled stavke narudzbe
+
+CREATE OR REPLACE VIEW view_stavke_narudzbe AS
+SELECT 
+    rs.narudzba_id,          
+    u.naziv AS naziv_artikla,
+    rs.kolicina,
+    rs.cijena_u_trenutku AS cijena_jedinicna,
+    (rs.kolicina * rs.cijena_u_trenutku) AS ukupno_stavka, 
+    rs.status_pripreme
+FROM restoran_stavka rs
+JOIN usluga u ON rs.usluga_id = u.id;
+
+-- ------------------------------------
+-- 17. pogled detalji racuna
+
+CREATE OR REPLACE VIEW view_detalji_racuna AS
+SELECT 
+    racun_id,
+    tip_stavke,
+    opis,
+    kolicina,
+    cijena_jedinicna,
+    iznos_ukupno
+FROM stavka_racuna;
+
+-- ------------------------------------
+-- 18. pogled recepti
+
+CREATE OR REPLACE VIEW view_recepture_detaljno AS
+SELECT 
+    u.id AS jelo_id,
+    u.naziv AS naziv_jela,
+    a.naziv AS namirnica,
+    n.kolicina_potrosnje,
+    a.jedinica_mjere,
+    a.nabavna_cijena AS cijena_po_jedinici,
+    -- Izračun troška te namirnice u jelu (količina * nabavna cijena)
+    ROUND(n.kolicina_potrosnje * a.nabavna_cijena, 2) AS trosak_sastojka
+FROM usluga u
+JOIN normativ n ON u.id = n.usluga_id
+JOIN artikl a ON n.artikl_id = a.id
+ORDER BY u.naziv, a.naziv;

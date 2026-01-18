@@ -28,9 +28,9 @@ DELIMITER ;
 
 
 
-
-DELIMITER // 
 DROP FUNCTION IF EXISTS pdv_koji_moramo_platiti_za_uslugu;
+DELIMITER // 
+
 CREATE FUNCTION pdv_koji_moramo_platiti_za_uslugu (p_usluga_id INT) RETURNS DECIMAL(10,2)
 DETERMINISTIC
 BEGIN
@@ -53,8 +53,10 @@ DELIMITER ;
 select usluga.id, pdv_koji_moramo_platiti(usluga.id) as owed_VAT
 from usluga;
 
-DELIMITER // 
+
 DROP FUNCTION IF EXISTS pdv_za_godinu;
+DELIMITER // 
+
 CREATE FUNCTION pdv_za_godinu (p_godina INT) RETURNS DECIMAL(10,2)
 DETERMINISTIC
 BEGIN
@@ -96,4 +98,36 @@ END //
 DELIMITER ; 
 
 -- select pdv_za_godinu(2026) as pdv_za_2026;
+
+
+-- ----------------------------------------------
+-- Izracun marze jela
+
+DROP FUNCTION IF EXISTS izracunaj_marzu_jela;
+
+DELIMITER //
+
+CREATE FUNCTION izracunaj_marzu_jela(p_usluga_id INT) RETURNS DECIMAL(10,2)
+DETERMINISTIC
+BEGIN
+    DECLARE v_prodajna DECIMAL(10,2);
+    DECLARE v_trosak_nabave DECIMAL(10,2);
+    
+    -- 1. Dohvati prodajnu cijenu
+    SELECT cijena_trenutna INTO v_prodajna 
+    FROM usluga WHERE id = p_usluga_id;
+    
+    -- 2. Izračunaj ukupni trošak sastojaka (suma normativa)
+    SELECT COALESCE(SUM(n.kolicina_potrosnje * a.nabavna_cijena), 0) 
+    INTO v_trosak_nabave
+    FROM normativ n
+    JOIN artikl a ON n.artikl_id = a.id
+    WHERE n.usluga_id = p_usluga_id;
+    
+    -- 3. Vrati razliku (Maržu)
+    -- Ako nema sastojaka (trošak 0), marža je jednaka cijeni
+    RETURN (v_prodajna - v_trosak_nabave);
+END //
+
+DELIMITER ;
 
