@@ -1,5 +1,5 @@
--- 1. Okidač za novu rezervacija na istu sobu koja već rezervirana + upit za prikaz  - - E.B.
-DROP TRIGGER  trg_dupla_rezervacija_sobe;
+-- 1. Okidač za novu rezervacija na istu sobu koja već rezervirana + upit za prikaz
+DROP TRIGGER IF EXISTS  trg_dupla_rezervacija_sobe;
 
 DELIMITER //
 
@@ -43,8 +43,8 @@ VALUES
 (1, 1, 16, NULL, NOW(), '2026-12-19', '2026-12-22', 1, 'POTVRDJENA', 'Test test');
 
 -- ----------------------------------------------------------------------------------------------------------------------------------
--- 2. Promocija se smije unijeti u rezervaciju samo ako je aktivna i vremenski važeća + upit za prikaz - - E.B.
-DROP TRIGGER trg_unos_provjera_valjanosti_promocije;
+-- 2. Promocija se smije unijeti u rezervaciju samo ako je aktivna i vremenski važeća + upit za prikaz
+DROP TRIGGER IF EXISTS trg_unos_provjera_valjanosti_promocije;
 DELIMITER //
 
 CREATE TRIGGER trg_unos_provjera_valjanosti_promocije
@@ -88,7 +88,7 @@ BEGIN
 END //
 
 DELIMITER ;
-
+-- Unos neaktivne promocije - bool 0 
 INSERT INTO promocija(id, naziv, kod_kupona, popust_postotak, datum_pocetka, datum_zavrsetka,aktivna) VALUES
 (999, 'NEAKTIVNA', 'TESTNA', 10.00, '2025-12-01', '2026-02-28',0); 
 
@@ -130,9 +130,9 @@ VALUES
 (1, 1, 7, 3, NOW(), '2026-02-22', '2026-03-05', 2, 'POTVRDJENA', 'Test before');
 
 -- ----------------------------------------------------------------------------------------------------------------------------------
--- 3. Promocija se smije ažurirati u postojećoj rezervaciji samo ako je aktivna i vremenski važeća + upit - - E.B.
+-- 3. Promocija se smije ažurirati u postojećoj rezervaciji samo ako je aktivna i vremenski važeća + upit
 
-drop trigger trg_ažuriranje_rezervacije_provjera_valjanosti_promocije;
+drop trigger if exists trg_ažuriranje_rezervacije_provjera_valjanosti_promocije;
 
 DELIMITER //
 
@@ -201,23 +201,23 @@ WHERE
 ORDER BY 
     r.id;
 
-
+-- neaktvne promocije
 UPDATE rezervacija 
 SET promocija_id =999 
 WHERE id = 16;
-
+--vremenski nevažeća promocija
 UPDATE rezervacija 
 SET promocija_id = 2 
 WHERE id =25;
 
-
+--vremenski nevažeća promocija #2
 UPDATE rezervacija 
 SET promocija_id = 4 
 WHERE id =38;
 
 -- ----------------------------------------------------------------------------------------------------------------------------------
--- 4. Check in vrijeme striktno od 14:00h pa nadalje kod prijave gosta tj. ažuriranja relacije rezervacija - - E.B.
- drop trigger trg_provjera_checkin_time;
+-- 4. Check in vrijeme striktno od 14:00h pa nadalje kod prijave gosta tj. ažuriranja relacije rezervacija
+ drop trigger if exists trg_provjera_checkin_time;
 DELIMITER //
 
 CREATE TRIGGER trg_provjera_checkin_time
@@ -226,7 +226,7 @@ FOR EACH ROW
 BEGIN
     IF NEW.vrijeme_check_in IS NOT NULL AND OLD.vrijeme_check_in IS NULL THEN
         
-        IF HOUR(NEW.vrijeme_check_in) <= 14 THEN
+        IF TIME(NEW.vrijeme_check_in) <= '14:00:00' THEN
             SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Greška: Check-in nije dozvoljen prije 14:00 sati!';
         END IF;
@@ -268,8 +268,7 @@ SET vrijeme_check_in = '2026-07-19 14:00:01',
     status = 'U_TIJEKU'
 WHERE id = 20;
 -- ----------------------------------------------------------------------------------------------------------------------------------
--- 5. Automatski unos svih novih rezervacija u "log_rezervacija" - - E.B.
-
+-- 5. Automatski unos svih novih rezervacija u "log_rezervacija"
 DELIMITER //
 CREATE TRIGGER trg_unos_log_rezervacija
 AFTER INSERT ON rezervacija
@@ -321,7 +320,7 @@ ORDER BY
     l.vrijeme_promjene DESC, l.id DESC
     ;
 -- ----------------------------------------------------------------------------------------------------------------------------------
--- 6. Automatski unos svih ažuriranja postojećih rezervacija u "log_rezervacija"  - - E.B.
+-- 6. Automatski unos ažuriranja statusa postojećih rezervacija u "log_rezervacija" 
 
 DELIMITER //
 CREATE TRIGGER trg_azuriranje_log_rezervacija
@@ -370,7 +369,7 @@ LIMIT 1;
 
 
 -- ---------------------------------------------------------------------------------------------------------------------------------- 
--- 7. Automatski unos svih brisanja postojećih rezervacija u "log_rezervacija"  - - E.B.
+-- 7. Automatski unos svih brisanja postojećih rezervacija u "log_rezervacija"
 
 ALTER TABLE log_rezervacije DROP FOREIGN KEY fk_rezervacija_id;  -- PITAJ EUGENA
 
@@ -394,7 +393,7 @@ SET SQL_SAFE_UPDATES = 1;
 
 DELETE FROM rezervacija 
 WHERE gost_nositelj_id = 10 
-  AND napomena LIKE 'Typo%';
+  AND napomena LIKE '%Typo%';
   
 SELECT 
     l.id AS 'ID Log',
@@ -427,7 +426,7 @@ ORDER BY
 
 
 -- --------------------------------------------------------------------------------------------------------------
--- 8. Automatski unos besplatnog čišćenja na stavka_računu ukoliko  je boravak bio duži od tri dana  - - E.B.
+-- 8. Automatski unos besplatnog čišćenja na stavka_računu ukoliko  je boravak bio duži od tri dana 
 
 DROP TRIGGER trg_besplatno_ciscenje_dugi_boravak;
 
@@ -469,12 +468,20 @@ BEGIN
 END //
 DELIMITER ;
 
+-- Naknadni insert usluge čišćenje
+INSERT INTO usluga (id, kategorija_id, naziv, opis, jedinica_mjere, cijena_trenutna) 
+VALUES (31, 1, 'Završno čišćenje', 'Čišćenje sobe nakon odlaska gosta', 'kom', 30.00);
 
 INSERT INTO stavka_racuna (racun_id, usluga_id, tip_stavke, opis, kolicina, cijena_jedinicna, iznos_ukupno) 
 VALUES (1, 31, 'USLUGA', 'Čišćenje redovno', 1, 30.00, 30.00);
 
 INSERT INTO stavka_racuna (racun_id, usluga_id, tip_stavke, opis, kolicina, cijena_jedinicna, iznos_ukupno) 
 VALUES (7, 31, 'USLUGA', 'Čišćenje redovno', 1, 30.00, 30.00);
+
+-- Ažuriranje greške iz inicijalnog inserta
+UPDATE rezervacija 
+SET kraj_datum = '2026-01-12'
+WHERE id = 1;  
 
 -- 8. Upit
 SELECT 
