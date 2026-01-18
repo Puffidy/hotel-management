@@ -428,16 +428,11 @@ BEGIN
     DECLARE v_naziv_usluge VARCHAR(50);
     DECLARE v_konacni_opis VARCHAR(100);
 
-    -- 1. Dohvati cijenu i naziv (Ovo radi ispravno, naziv SE DOHVAĆA)
     SELECT cijena_trenutna, naziv INTO v_cijena, v_naziv_usluge 
     FROM usluga WHERE id = p_usluga_id;
 
-    -- 2. "Pametni" odabir opisa:
-    -- NULLIF(p_napomena, '') -> Ako je napomena prazna '', pretvori je u NULL.
-    -- COALESCE(..., v_naziv_usluge) -> Ako je rezultat NULL, uzmi naziv usluge.
     SET v_konacni_opis = COALESCE(NULLIF(p_napomena, ''), v_naziv_usluge);
 
-    -- 3. Nađi OTVOREN HOTEL račun
     SELECT id INTO v_racun_id
     FROM racun 
     WHERE rezervacija_id = p_rezervacija_id 
@@ -452,11 +447,10 @@ BEGIN
         SET v_racun_id = LAST_INSERT_ID();
     END IF;
     
-    -- 4. Unos s ispravnim opisom
     INSERT INTO stavka_racuna (racun_id, usluga_id, tip_stavke, opis, kolicina, cijena_jedinicna, iznos_ukupno)
     VALUES (v_racun_id, p_usluga_id, 'USLUGA', v_konacni_opis, p_kolicina, v_cijena, v_cijena * p_kolicina);
 
-    -- 5. Ažuriraj ukupni iznos
+    -- Ažuriraj ukupni iznos
     UPDATE racun 
     SET iznos_ukupno = (SELECT SUM(iznos_ukupno) FROM stavka_racuna WHERE racun_id = v_racun_id)
     WHERE id = v_racun_id;
