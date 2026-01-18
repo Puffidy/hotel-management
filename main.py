@@ -144,11 +144,11 @@ if menu == "📅 RECEPCIJA (Rezervacije)":
             p_id = int(raw_promo_id) if raw_promo_id is not None else None
             br_osoba = int(broj_osoba)
             
-            # Lista parametara mora odgovarati redoslijedu u 'sp_kreiraj_rezervaciju'
+            # Lista parametara mora odgovarati redoslijedu u 'proc_kreiraj_rezervaciju'
             params = [g_id, s_id, p_id, datum_dolaska, datum_odlaska, br_osoba, napomena]
             
             # Poziv procedure umjesto SQL INSERT-a
-            success, msg = run_action("sp_kreiraj_rezervaciju", params, is_procedure=True)
+            success, msg = run_action("proc_kreiraj_rezervaciju", params, is_procedure=True)
             
             if success:
                 st.toast("✅ Rezervacija uspješno kreirana!", icon='📅')
@@ -209,8 +209,8 @@ if menu == "📅 RECEPCIJA (Rezervacije)":
                 # AKCIJA 1: Check-In 
                 if status_trenutni == 'POTVRDJENA':
                     if st.button("🛎️ Check-In"):
-                        # Poziv procedure 'sp_rezervacija_check_in'
-                        success, msg = run_action("sp_rezervacija_check_in", [odabrani_rez_id], is_procedure=True)
+                        # Poziv procedure 'proc_rezervacija_check_in'
+                        success, msg = run_action("proc_rezervacija_check_in", [odabrani_rez_id], is_procedure=True)
                         
                         if success:
                             st.success("Gost prijavljen!")
@@ -222,8 +222,8 @@ if menu == "📅 RECEPCIJA (Rezervacije)":
                 # AKCIJA 2: Check-Out
                 if status_trenutni == 'U_TIJEKU':
                     if st.button("👋 Check-Out"):
-                        # Poziv procedure 'sp_rezervacija_check_out'
-                        success, msg = run_action("sp_rezervacija_check_out", [odabrani_rez_id], is_procedure=True)
+                        # Poziv procedure 'proc_rezervacija_check_out'
+                        success, msg = run_action("proc_rezervacija_check_out", [odabrani_rez_id], is_procedure=True)
                         
                         if success:
                             st.success("Gost odjavljen!")
@@ -325,11 +325,11 @@ if menu == "📅 RECEPCIJA (Rezervacije)":
                 p_grad = grad_dict.get(ng_grad)
                 p_drz = drz_dict.get(ng_drzava)
                 
-                # Parametri moraju odgovarati proceduri 'sp_kreiraj_gosta'
+                # Parametri moraju odgovarati proceduri 'proc_kreiraj_gosta'
                 params = [ng_ime, ng_prezime, p_dok, ng_dok_broj, p_grad, ng_adresa, p_drz]
                 
                 # Poziv procedure umjesto SQL INSERT-a
-                succ, msg = run_action("sp_kreiraj_gosta", params, is_procedure=True)
+                succ, msg = run_action("proc_kreiraj_gosta", params, is_procedure=True)
                 
                 if succ:
                     st.success(f"✅ Uspješno dodan gost: **{ng_ime} {ng_prezime}**")
@@ -383,7 +383,7 @@ if menu == "📅 RECEPCIJA (Rezervacije)":
                     
                     # Poziv procedure ostaje isti, to je bilo dobro
                     # Params: rezervacija_id, usluga_id, kolicina, napomena
-                    succ, msg = run_action("sp_dodaj_uslugu_na_sobu", [r_id, u_id, kolicina_usluge, napomena_usluge], is_procedure=True)
+                    succ, msg = run_action("proc_dodaj_uslugu_na_sobu", [r_id, u_id, kolicina_usluge, napomena_usluge], is_procedure=True)
                     
                     if succ:
                         st.toast("✅ Usluga uspješno dodana na račun!", icon='💆')

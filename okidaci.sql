@@ -568,6 +568,7 @@ END$$
 DELIMITER ;
 
 -- ------------------------------------------------------------
+-- 1. okidac provjera datum rezrvacije
 
 DROP TRIGGER IF EXISTS trg_check_datumi_rezervacije;
 
@@ -586,26 +587,9 @@ END //
 
 DELIMITER ;
 
--- -------------------------------------------------------------
-
-DROP TRIGGER IF EXISTS trg_check_datumi_rezervacije_update;
-
-DELIMITER //
-
-CREATE TRIGGER trg_check_datumi_rezervacije_update
-BEFORE UPDATE ON rezervacija
-FOR EACH ROW
-BEGIN
-    -- Provjera vrijedi i kod izmjene podataka
-    IF NEW.kraj_datum <= NEW.pocetak_datum THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Greška: Datum odlaska mora biti nakon datuma dolaska!';
-    END IF;
-END //
-
-DELIMITER ;
 
 -- ---------------------------------------------------------
+-- 2. okidac za sprijecavanje ranog checkina
 
 DROP TRIGGER IF EXISTS trg_sprijeci_rani_checkin;
 
@@ -630,6 +614,8 @@ END //
 DELIMITER ;
 
 -- ------------------------------------
+-- 3. okidac automatsko ciscenje sobe nakon checkouta
+
 DELIMITER //
 
 CREATE TRIGGER trg_auto_ciscenje_nakon_checkouta
@@ -649,7 +635,9 @@ END //
 
 DELIMITER ;
 
--- 1. TRIGGER ZA NOVU REZERVACIJU (INSERT)
+-- ---------------------------------------------------
+-- 4. okidac unos log rezervacija
+
 DROP TRIGGER IF EXISTS trg_unos_log_rezervacija;
 
 DELIMITER //
@@ -664,7 +652,9 @@ END //
 
 DELIMITER ;
 
--- 2. TRIGGER ZA PROMJENU STATUSA (UPDATE - Check-in, Check-out, Otkazivanje)
+-- --------------------------------------------------
+-- 5. okidac azuriranje log rezrvacija
+
 DROP TRIGGER IF EXISTS trg_azuriranje_log_rezervacija;
 
 DELIMITER //
@@ -683,6 +673,7 @@ END //
 DELIMITER ;
 
 -- ---------------------------------------
+-- 6. okidac sprijeci rezervaciju ako je kvar ili ciscenje
 
 DROP TRIGGER IF EXISTS trg_sprijeci_rezervaciju_kvar;
 

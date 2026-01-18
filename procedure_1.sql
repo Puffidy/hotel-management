@@ -29,14 +29,6 @@ END //
 
 DELIMITER ;
 
--- #################
-
-
-CALL proc_otvori_narudzbu(28, 10, @novi_id);
-SELECT @novi_id;
-
-SELECT * FROM restoran_narudzba;
-
 -- --------------------------------------------------------------------------------------------
 -- 2. Dodavanje stavki na narudžbu
 DROP PROCEDURE proc_dodaj_stavku;
@@ -67,12 +59,6 @@ BEGIN
 END //
 
 DELIMITER ;
-
--- ###########
-
-CALL proc_dodaj_stavku(15, 12, 2);
-
-SELECT * FROM restoran_stavka;
 
  -- ---------------------------------------------------------------
  -- 3. Početak pripreme narudžbe
@@ -137,14 +123,6 @@ BEGIN
 END //
  
 DELIMITER ;
-
--- #############
-CALL proc_zapocni_pripremu(24, @poruka_rezultat);
-
-SELECT * FROM restoran_stavka;
-SELECT * FROM artikl;
-SELECT * FROM usluga;
-SELECT * FROM normativ;
 
  -- ---------------------------------------------------------------
  -- 4. Posluživanje narudžbe
@@ -217,13 +195,6 @@ END //
 
 DELIMITER ;
 
-CALL proc_posluzi_stavku(24, @poruka_rezultat);
-
-SELECT * FROM restoran_stavka;
-SELECT * FROM artikl WHERE id=3;
-SELECT * FROM usluga WHERE id=12;
-SELECT * FROM normativ WHERE artikl_id=3 AND usluga_id=12;
-
  -- ---------------------------------------------------------------
  -- 5. Naplata naruđbe
  
@@ -237,16 +208,35 @@ CREATE PROCEDURE proc_naplati_narudzbu(
     IN p_broj_sobe INT,
     OUT p_poruka VARCHAR(100)
 )
-main: BEGIN  -- <--- Dodali smo oznaku "main" kako bi LEAVE znao sto napusta
-    
-    -- Ispravljen tipfeler (bilo je inznos)
-    DECLARE v_ukupni_iznos DECIMAL(10,2);
+main: BEGIN
+    -- Varijable za logiku računa
     DECLARE v_status_narudzbe VARCHAR(20);
     DECLARE v_rezervacija_id INT DEFAULT NULL;
     DECLARE v_racun_id INT;
     DECLARE v_gost_ime VARCHAR(100);
     
-    -- Ispravljen tipfeler (bilo je SQLEXEPTION)
+    -- Varijable za KURSOR (čitanje stavki narudžbe)
+    DECLARE v_naziv_usluge VARCHAR(50);
+    DECLARE v_kolicina INT;
+    DECLARE v_cijena DECIMAL(10,2);
+    DECLARE v_stavka_ukupno DECIMAL(10,2);
+    
+    -- Varijabla za kontrolu petlje
+    DECLARE done INT DEFAULT FALSE;
+    
+    -- 1. DEKLARACIJA KURSORA
+    -- Dohvaćamo naziv, količinu i cijenu za svaku stavku te narudžbe
+    DECLARE cur_stavke CURSOR FOR 
+        SELECT u.naziv, rs.kolicina, rs.cijena_u_trenutku
+        FROM restoran_stavka rs
+        JOIN usluga u ON rs.usluga_id = u.id
+        WHERE rs.narudzba_id = p_narudzba_id 
+          AND rs.status_pripreme != 'STORNIRANO';
+          
+    -- Handler koji javlja kada kursor dođe do kraja podataka
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    -- Handler za greške (rollback transakcije)
     DECLARE EXIT HANDLER FOR SQLEXCEPTION 
     BEGIN
         ROLLBACK;
@@ -255,108 +245,102 @@ main: BEGIN  -- <--- Dodali smo oznaku "main" kako bi LEAVE znao sto napusta
     
     START TRANSACTION;
     
-    -- provjera statusa narudžbe
-    SELECT status INTO v_status_narudzbe
-    FROM restoran_narudzba
-    WHERE id = p_narudzba_id;
+    -- A) Provjera statusa narudžbe
+    SELECT status INTO v_status_narudzbe FROM restoran_narudzba WHERE id = p_narudzba_id;
     
-    -- Ako narudžba ne postoji ili nije otvorena
-    IF v_status_narudzbe IS NULL OR v_status_narudzbe != 'OTVORENA' THEN
+    IF v_status_narudzbe IS NULL OR v_status_narudzbe != 'OTVORENA' THEN 
         SET p_poruka = 'Greška: Narudžba nije otvorena ili ne postoji.';
         ROLLBACK;
-        LEAVE main; -- Izlazimo iz procedure
-    ELSE
-        -- izračun ukupnog iznosa
-        SELECT SUM(kolicina * cijena_u_trenutku) INTO v_ukupni_iznos
-        FROM restoran_stavka
-        WHERE narudzba_id = p_narudzba_id AND status_pripreme != 'STORNIRANO';
+        LEAVE main;
+    END IF;
+
+    -- B) Pronalazak rezervacije ako je unesena soba
+    IF p_broj_sobe IS NOT NULL THEN
+        SELECT r.id, CONCAT(g.ime, ' ', g.prezime) 
+        INTO v_rezervacija_id, v_gost_ime
+        FROM rezervacija r 
+        JOIN soba s ON r.soba_id = s.id 
+        JOIN gost g ON r.gost_nositelj_id = g.id
+        WHERE s.broj = p_broj_sobe AND r.status = 'U_TIJEKU';
         
-        -- Ako je iznos 0 ili NULL
-        IF v_ukupni_iznos IS NULL OR v_ukupni_iznos = 0 THEN
-            -- Ispravljeno PLAĆENO u PLACENO (bez kvačice radi konzistentnosti)
-            UPDATE restoran_narudzba SET status = 'PLACENO', datum_zatvaranja = NOW() WHERE id = p_narudzba_id;
-            SET p_poruka = 'Narudžba zatvorena (iznos 0).';
-            COMMIT;
-            LEAVE main; -- Izlazimo jer nemamo što naplatiti
-        ELSE
-            -- Logika za određivanje plaćanja (Soba ili Restoran)
-            
-            -- 1. Pokušaj naći rezervaciju ako je unesen broj sobe
-            IF p_broj_sobe IS NOT NULL THEN
-                SELECT r.id, CONCAT(g.ime, ' ', g.prezime)
-                INTO v_rezervacija_id, v_gost_ime
-                FROM rezervacija r
-                JOIN soba s ON r.soba_id = s.id
-                JOIN gost g ON r.gost_nositelj_id = g.id
-                WHERE s.broj = p_broj_sobe
-                  AND r.status = 'U_TIJEKU';
-                  
-                -- Ako soba ne postoji ili nema gosta
-                IF v_rezervacija_id IS NULL THEN
-                    SET p_poruka = CONCAT('Greška: U sobi ', p_broj_sobe, ' trenutno nema prijavljenih gostiju!');
-                    ROLLBACK;
-                    LEAVE main; -- <--- Ovdje sada LEAVE main radi ispravno
-                END IF;
-            END IF;
-            
-            -- 2. Odabir scenarija naplate
-            IF v_rezervacija_id IS NOT NULL THEN
-                -- SCENARIJ A: GOST HOTELA (Na sobu)
-                
-                -- Nađi postojeći otvoren račun sobe
-                SELECT id INTO v_racun_id
-                FROM racun
-                WHERE rezervacija_id = v_rezervacija_id AND status_racuna = 'OTVOREN' AND tip_racuna = 'HOTEL'
-                LIMIT 1;
-
-                -- Ako nema računa, otvori novi HOTEL račun
-                IF v_racun_id IS NULL THEN
-                    INSERT INTO racun (tip_racuna, rezervacija_id, datum_izdavanja, nacin_placanja, iznos_ukupno, status_racuna)
-                    VALUES ('HOTEL', v_rezervacija_id, NOW(), 'VIRMANSKI', 0.00, 'OTVOREN');
-                    SET v_racun_id = LAST_INSERT_ID();
-                END IF;
-
-                -- Dodaj stavku na taj račun
-                INSERT INTO stavka_racuna (racun_id, tip_stavke, opis, kolicina, cijena_jedinicna, iznos_ukupno)
-                VALUES (v_racun_id, 'USLUGA', CONCAT('Restoran - Narudžba #', p_narudzba_id), 1, v_ukupni_iznos, v_ukupni_iznos);
-                
-                -- Ažuriraj ukupni iznos računa
-                UPDATE racun SET iznos_ukupno = IFNULL(iznos_ukupno, 0) + v_ukupni_iznos WHERE id = v_racun_id;
-
-                SET p_poruka = CONCAT('Uspjeh: Naplaćeno na sobu ', p_broj_sobe, ' (Gost: ', v_gost_ime, ')');
-                
-            ELSE
-                -- SCENARIJ B: VANJSKI GOST (Direktna naplata)
-                
-                INSERT INTO racun (tip_racuna, rezervacija_id, datum_izdavanja, nacin_placanja, iznos_ukupno, status_racuna)
-                VALUES ('RESTORAN', NULL, NOW(), p_nacin_placanja, v_ukupni_iznos, 'PLACENO');
-                
-                SET v_racun_id = LAST_INSERT_ID();
-
-                INSERT INTO stavka_racuna (racun_id, tip_stavke, opis, kolicina, cijena_jedinicna, iznos_ukupno)
-                VALUES (v_racun_id, 'USLUGA', CONCAT('Restoran - Narudžba #', p_narudzba_id), 1, v_ukupni_iznos, v_ukupni_iznos);
-
-                SET p_poruka = CONCAT('Uspjeh: Naplaćeno vanjskom gostu. Račun ID: ', v_racun_id);
-            END IF;
-
-            -- Zajednički korak: Zatvori restoransku narudžbu
-            UPDATE restoran_narudzba 
-            SET status = 'PLACENO', datum_zatvaranja = NOW()
-            WHERE id = p_narudzba_id;
-
-            COMMIT;
+        IF v_rezervacija_id IS NULL THEN
+            SET p_poruka = CONCAT('Greška: U sobi ', p_broj_sobe, ' nema prijavljenih gostiju!');
+            ROLLBACK;
+            LEAVE main;
         END IF;
     END IF;
+
+    -- C) Kreiranje ili dohvaćanje RAČUNA (Header)
+    IF v_rezervacija_id IS NOT NULL THEN
+        -- SCENARIJ: Gosti hotela (traži postojeći otvoren račun)
+        SELECT id INTO v_racun_id 
+        FROM racun 
+        WHERE rezervacija_id = v_rezervacija_id 
+          AND status_racuna = 'OTVOREN' 
+          AND tip_racuna = 'HOTEL' 
+        LIMIT 1;
         
-END // -- Kraj procedure
+        -- Ako nema računa, otvori novi
+        IF v_racun_id IS NULL THEN
+            INSERT INTO racun (tip_racuna, rezervacija_id, datum_izdavanja, nacin_placanja, iznos_ukupno, status_racuna)
+            VALUES ('HOTEL', v_rezervacija_id, NOW(), 'VIRMANSKI', 0.00, 'OTVOREN');
+            SET v_racun_id = LAST_INSERT_ID();
+        END IF;
+    ELSE
+        -- SCENARIJ: Vanjski gosti (odmah novi račun)
+        INSERT INTO racun (tip_racuna, rezervacija_id, datum_izdavanja, nacin_placanja, iznos_ukupno, status_racuna)
+        VALUES ('RESTORAN', NULL, NOW(), p_nacin_placanja, 0.00, 'PLACENO');
+        SET v_racun_id = LAST_INSERT_ID();
+    END IF;
+
+    -- D) KURSOR I PETLJA (Glavni dio promjene)
+    -- Ovdje prebacujemo stavku po stavku iz narudžbe u račun
+    
+    OPEN cur_stavke; -- Otvaramo kursor
+    
+    read_loop: LOOP
+        FETCH cur_stavke INTO v_naziv_usluge, v_kolicina, v_cijena;
+        
+        -- Ako nema više redaka, izađi iz petlje
+        IF done THEN
+            LEAVE read_loop;
+        END IF;
+        
+        -- Izračun cijene za tu stavku
+        SET v_stavka_ukupno = v_kolicina * v_cijena;
+        
+        -- INSERT pojedinačne stavke na račun
+        INSERT INTO stavka_racuna (racun_id, tip_stavke, opis, kolicina, cijena_jedinicna, iznos_ukupno)
+        VALUES (v_racun_id, 'USLUGA', v_naziv_usluge, v_kolicina, v_cijena, v_stavka_ukupno);
+        
+    END LOOP;
+    
+    CLOSE cur_stavke; -- Zatvaramo kursor
+    
+    -- E) Finalno ažuriranje ukupnog iznosa računa
+    -- Zbrajamo sve stavke koje smo upravo unijeli (i one od prije ako je hotelski račun)
+    UPDATE racun 
+    SET iznos_ukupno = (SELECT SUM(iznos_ukupno) FROM stavka_racuna WHERE racun_id = v_racun_id)
+    WHERE id = v_racun_id;
+
+    -- F) Zatvaranje restoranske narudžbe
+    UPDATE restoran_narudzba 
+    SET status = 'PLACENO', datum_zatvaranja = NOW() 
+    WHERE id = p_narudzba_id;
+    
+    SET p_poruka = CONCAT('Uspjeh: Račun naplaćen (ID Računa: ', v_racun_id, ')');
+    COMMIT;
+
+END //
 
 DELIMITER ;
 
--- 1. Procedura za kreiranje nove rezervacije
-DROP PROCEDURE IF EXISTS sp_kreiraj_rezervaciju;
+-- -----------------------------------------------
+-- 6. Procedura za kreiranje nove rezervacije
+DROP PROCEDURE IF EXISTS proc_kreiraj_rezervaciju;
 DELIMITER //
 
-CREATE PROCEDURE sp_kreiraj_rezervaciju(
+CREATE PROCEDURE proc_kreiraj_rezervaciju(
     IN p_gost_id INT,
     IN p_soba_id INT,
     IN p_promocija_id INT, -- Može biti NULL
@@ -366,9 +350,6 @@ CREATE PROCEDURE sp_kreiraj_rezervaciju(
     IN p_napomena TEXT
 )
 BEGIN
-    -- Samo radimo INSERT. 
-    -- Svi tvoji Triggeri (provjera datuma, zauzeća sobe, promocije) 
-    -- će se automatski aktivirati i spriječiti unos ako nešto ne valja.
     INSERT INTO rezervacija 
     (gost_nositelj_id, zaposlenik_id, soba_id, promocija_id, pocetak_datum, kraj_datum, broj_osoba, status, napomena)
     VALUES 
@@ -377,12 +358,13 @@ END //
 
 DELIMITER ;
 
--- 2. Procedura za unos novog gosta
-DROP PROCEDURE IF EXISTS sp_kreiraj_gosta;
+-- ----------------------------------------------------
+-- 7. Procedura za unos novog gosta
+DROP PROCEDURE IF EXISTS proc_kreiraj_gosta;
 
 DELIMITER //
 
-CREATE PROCEDURE sp_kreiraj_gosta(
+CREATE PROCEDURE proc_kreiraj_gosta(
     IN p_ime VARCHAR(50),
     IN p_prezime VARCHAR(50),
     IN p_vrsta_dok_id INT,
@@ -392,7 +374,6 @@ CREATE PROCEDURE sp_kreiraj_gosta(
     IN p_drzava_id INT
 )
 BEGIN
-    -- Insert novog gosta
     INSERT INTO gost 
     (ime, prezime, vrsta_dokumenta_id, broj_dokumenta, prebivaliste_grad_id, prebivaliste_adresa, drzavljanstvo_id)
     VALUES 
@@ -401,16 +382,16 @@ END //
 
 DELIMITER ;
 
--- 3. Procedura za Check-In
-DROP PROCEDURE IF EXISTS sp_rezervacija_check_in;
+-- ------------------------------------------------
+-- 8. Procedura za Check-In
+DROP PROCEDURE IF EXISTS proc_rezervacija_check_in;
 
 DELIMITER //
 
-CREATE PROCEDURE sp_rezervacija_check_in(
+CREATE PROCEDURE proc_rezervacija_check_in(
     IN p_rezervacija_id INT
 )
 BEGIN
-    -- Trigger 'trg_sprijeci_rani_checkin' će paziti na datume umjesto nas
     UPDATE rezervacija 
     SET status = 'U_TIJEKU', 
         vrijeme_check_in = NOW() 
@@ -419,12 +400,13 @@ END //
 
 DELIMITER ;
 
--- 4. Procedura za Check-Out
-DROP PROCEDURE IF EXISTS sp_rezervacija_check_out;
+-- -------------------------------------------
+-- 9. Procedura za Check-Out
+DROP PROCEDURE IF EXISTS proc_rezervacija_check_out;
 
 DELIMITER //
 
-CREATE PROCEDURE sp_rezervacija_check_out(
+CREATE PROCEDURE proc_rezervacija_check_out(
     IN p_rezervacija_id INT
 )
 BEGIN
@@ -437,11 +419,12 @@ END //
 DELIMITER ;
 
 -- -----------------------------------------------
-DROP PROCEDURE IF EXISTS sp_dodaj_uslugu_na_sobu;
+-- 10. Dodavanje usluge na sobu
+DROP PROCEDURE IF EXISTS proc_dodaj_uslugu_na_sobu;
 
 DELIMITER //
 
-CREATE PROCEDURE sp_dodaj_uslugu_na_sobu(
+CREATE PROCEDURE proc_dodaj_uslugu_na_sobu(
     IN p_rezervacija_id INT,
     IN p_usluga_id INT,
     IN p_kolicina INT,
@@ -485,14 +468,14 @@ END //
 DELIMITER ;
 
 -- -----------------------------------
--- 1. PROCEDURA: ČIŠĆENJE + EVIDENCIJA ŠTETE
+-- 11. Čišćenje i evidentiranje štete
 DROP PROCEDURE IF EXISTS proc_evidentiraj_ciscenje;
 
 DELIMITER //
 CREATE PROCEDURE proc_evidentiraj_ciscenje(
     IN p_soba_id INT,
     IN p_opis_stete TEXT,
-    IN p_zaposlenik_id INT -- Tko je čistio
+    IN p_zaposlenik_id INT
 )
 BEGIN
     DECLARE v_rezervacija_id INT;
@@ -514,15 +497,14 @@ BEGIN
     VALUES (p_zaposlenik_id, v_rezervacija_id, v_ima_stete, p_opis_stete, 1);
     
     -- 4. Pozovi postojeću logiku za promjenu statusa sobe
-    -- (Ovo je tvoja postojeća procedura, samo je zovemo iznutra)
+    -- postojeća procedura, samo je zovemo iznutra
     CALL sp_ociscena_soba(p_soba_id);
     
 END //
 DELIMITER ;
 
 -- ------------------------------------
-
--- 3. PROCEDURA: DODAJ SUPUTNIKA
+-- 12. dodavanje suputnika
 DROP PROCEDURE IF EXISTS proc_dodaj_suputnika;
 
 DELIMITER //
@@ -539,7 +521,7 @@ BEGIN
     WHERE rezervacija_id = p_rezervacija_id AND gost_id = p_gost_id;
     
     IF v_postoji > 0 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Gost je već dodan na ovu rezervaciju.';
+        SIGNAL SQLSTATE '45003' SET MESSAGE_TEXT = 'Gost je već dodan na ovu rezervaciju.';
     ELSE
         INSERT INTO rezervacija_gost (rezervacija_id, gost_id, uloga)
         VALUES (p_rezervacija_id, p_gost_id, 'GOST');
