@@ -670,7 +670,7 @@ elif menu == "📊 STANJE (Sobe i Logovi)":
     st.header("Upravljanje stanjem hotela")
     
     # Kreiramo tabove za bolju preglednost
-    tab_pregled, tab_domacinstvo, tab_odrzavanje = st.tabs(["👁️ Pregled Stanja", "🧹 Domaćinstvo", "🛠️ Održavanje (Kvarovi)"])
+    tab_pregled, tab_domacinstvo, tab_odrzavanje, tab_provjera_dostupnosti = st.tabs(["👁️ Pregled Stanja", "🧹 Domaćinstvo", "🛠️ Održavanje (Kvarovi)", "📆 Provjera dostupnosti"])
 
     # --- TAB 1: PREGLED SOBA I LOGOVA (Ovo već imaš, samo je sada u tabu) ---
     with tab_pregled:
@@ -855,6 +855,32 @@ elif menu == "📊 STANJE (Sobe i Logovi)":
                     st.toast("Nalog zatvoren.")
                     time.sleep(1)
                     st.rerun()
+    
+    # --- TAB 4: PROVJERA DOSTUPNOSTI SOBA ---
+    with tab_provjera_dostupnosti:
+        st.subheader("Provjeri dostupnost soba")
+        
+        col_pd1, col_pd2, col_pd3 = st.columns(3)
+        with col_pd1:
+            datum_checkin = st.date_input("Datum prijave", value=datetime.today().date())
+        with col_pd2:
+            datum_checkout = st.date_input("Datum odjave", value=datetime.today().date())
+        with col_pd3:
+            broj_osoba = st.number_input("Broj osoba", min_value=1, max_value=4, value=1)
+        
+        if st.button("🔍 Provjeri dostupnost"):
+            if datum_checkin >= datum_checkout:
+                st.error("Datum odjave mora biti nakon datuma prijave.")
+            else:
+                # KORISTIMO POGLED 'view_dostupne_sobe'
+                dostupno = run_query("SELECT provjeri_dostupnost_kapaciteta(%s, %s, %s) AS Mogu_Li_Rezervirati_Kapacitet", [broj_osoba, datum_checkin, datum_checkout])
+
+                if dostupno.empty or dostupno.iloc[0]['Mogu_Li_Rezervirati_Kapacitet'] == 0:
+                    st.warning("Nema dostupnih soba za odabrani period.")
+                else:
+                    dostupno = run_query("CALL dohvati_slobodne_sobe(%s, %s, %s)", [broj_osoba, datum_checkin, datum_checkout])
+                    st.success("Imaju dostupne sobe!")
+                    st.dataframe(dostupno, use_container_width=True)
 
 # =============================================================================
 # MODUL 4: IZVJEŠTAJI (FINANCIJE I SKLADIŠTE)

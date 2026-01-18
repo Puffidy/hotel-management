@@ -31,6 +31,9 @@ DELIMITER ;
 DROP FUNCTION IF EXISTS pdv_koji_moramo_platiti_za_uslugu;
 DELIMITER // 
 
+
+DELIMITER // 
+
 CREATE FUNCTION pdv_koji_moramo_platiti_za_uslugu (p_usluga_id INT) RETURNS DECIMAL(10,2)
 DETERMINISTIC
 BEGIN
@@ -69,7 +72,7 @@ BEGIN
     from racun
     join stavka_racuna
         on racun.id = stavka_racuna.racun_id
-    where YEAR(datum_izdavanja) = '2026'
+    where YEAR(datum_izdavanja) = p_godina
         and tip_stavke = 'NOCENJE'
     INTO v_pdv_nocenje;
 
@@ -77,7 +80,7 @@ BEGIN
     from racun
     join stavka_racuna
         on racun.id = stavka_racuna.racun_id
-    where YEAR(datum_izdavanja) = '2026'
+    where YEAR(datum_izdavanja) = p_godina
         and tip_stavke = 'USLUGA'
         and usluga_id IS NOT NULL
     INTO v_pdv_usluge_izvan_restorana;
@@ -88,7 +91,7 @@ BEGIN
         on racun.id = stavka_racuna.racun_id
     join restoran_stavka
         on stavka_racuna.restoran_stavka_id = restoran_stavka.id
-    where YEAR(datum_izdavanja) = '2026'
+    where YEAR(datum_izdavanja) = p_godina
         and tip_stavke = 'USLUGA'
         and restoran_stavka_id IS NOT NULL
     INTO v_pdv_usluge_unutar_restorana;
@@ -131,3 +134,59 @@ END //
 
 DELIMITER ;
 
+
+DROP FUNCTION IF EXISTS provjeri_dostupnost_sobe;
+DELIMITER //
+CREATE FUNCTION provjeri_dostupnost_sobe(p_soba_id INT, p_datum_dolaska DATE, p_datum_odlaska DATE) RETURNS BOOLEAN 
+DETERMINISTIC
+BEGIN
+    DECLARE v_zauzetost_broj INT DEFAULT 0;
+    
+    SELECT COUNT(*) INTO v_zauzetost_broj
+    FROM rezervacija
+    WHERE soba_id = p_soba_id
+        AND status != 'OTKAZANA'
+        AND pocetak_datum < p_datum_odlaska
+        AND kraj_datum > p_datum_dolaska;
+
+    RETURN v_zauzetost_broj = 0;
+END //
+
+DELIMITER ;
+
+
+-- Treba vratiti 0 jer se siječe sa starom rezervacijom
+
+SELECT provjeri_dostupnost_sobe(2, '2026-01-16', '2026-01-19') AS Mogu_Li_Rezervirati;
+
+SELECT soba.id, soba.broj, soba.kapacitet_osoba, provjeri_dostupnost_sobe(soba.id, '2026-01-16', '2026-01-19') FROM soba;
+
+DROP FUNCTION IF EXISTS provjeri_dostupnost_kapaciteta;
+DELIMITER //
+CREATE FUNCTION provjeri_dostupnost_kapaciteta(p_broj_osoba INT, p_datum_dolaska DATE, p_datum_odlaska DATE) RETURNS BOOLEAN 
+DETERMINISTIC
+BEGIN
+    DECLARE v_broj_slobodnih_soba INT DEFAULT 0;
+    
+    SELECT COUNT(*) INTO v_broj_slobodnih_soba
+    FROM soba
+    WHERE kapacitet_osoba >= p_broj_osoba
+    AND provjeri_dostupnost_sobe(soba.id, p_datum_dolaska, p_datum_odlaska) = 1;
+
+    RETURN v_broj_slobodnih_soba >= 1;
+END //
+
+DELIMITER ;
+
+-- 02.08 je zauzeta soba za 4 osobe sa ovim testnim podacima 
+INSERT INTO rezervacija (id, gost_nositelj_id, zaposlenik_id, soba_id, promocija_id, datum_rezervacije, pocetak_datum, kraj_datum, vrijeme_check_in, vrijeme_check_out, broj_osoba, status, napomena) VALUES
+(41, 1, 1, 36, NULL, '2026-05-01 10:00:00', '2026-08-01', '2026-08-05', NULL, NULL, 4, 'POTVRDJENA', 'Test Data - Room 36'),
+(42, 2, 1, 37, NULL, '2026-05-01 10:05:00', '2026-07-28', '2026-08-03', NULL, NULL, 4, 'POTVRDJENA', 'Test Data - Room 37'),
+(43, 3, 2, 40, NULL, '2026-05-01 10:10:00', '2026-07-20', '2026-08-10', NULL, NULL, 4, 'POTVRDJENA', 'Test Data - Room 40'),
+(44, 4, 2, 41, NULL, '2026-05-01 10:15:00', '2026-08-01', '2026-08-03', NULL, NULL, 4, 'POTVRDJENA', 'Test Data - Room 41'),
+(45, 5, 3, 43, NULL, '2026-05-01 10:20:00', '2026-07-31', '2026-08-04', NULL, NULL, 4, 'POTVRDJENA', 'Test Data - Room 43'),
+(46, 6, 3, 45, NULL, '2026-05-01 10:25:00', '2026-08-01', '2026-08-03', NULL, NULL, 4, 'POTVRDJENA', 'Test Data - Room 45'),
+(47, 1, 4, 46, NULL, '2026-05-01 10:30:00', '2026-06-01', '2026-09-01', NULL, NULL, 4, 'POTVRDJENA', 'Test Data - Room 46'),
+(48, 2, 4, 50, NULL, '2026-05-01 10:35:00', '2026-07-30', '2026-08-05', NULL, NULL, 4, 'POTVRDJENA', 'Test Data - Room 50');
+
+SELECT provjeri_dostupnost_kapaciteta(4, '2026-08-01', '2026-08-03') AS Mogu_Li_Rezervirati_Kapacitet;

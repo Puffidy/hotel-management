@@ -193,3 +193,20 @@ DELIMITER ;
 -- CALL koji radi sa postojećim insertima
 CALL sp_primijeni_promociju(1, 1);  -- rezervacija_id = 1, promocija_id = 1
 
+
+-- Procedura Alma
+DROP PROCEDURE IF EXISTS dohvati_slobodne_sobe;
+DELIMITER //
+
+CREATE PROCEDURE dohvati_slobodne_sobe(IN p_broj_osoba INT, IN p_datum_dolaska DATE, IN p_datum_odlaska DATE)
+BEGIN
+    SELECT broj, kapacitet_osoba, naziv AS tip_sobe
+    FROM soba
+    LEFT JOIN tip_sobe ON soba.tip_sobe_id = tip_sobe.id
+    WHERE provjeri_dostupnost_sobe(soba.id, p_datum_dolaska, p_datum_odlaska) = 1
+    AND kapacitet_osoba >= p_broj_osoba;
+END //
+
+DELIMITER ;
+
+CALL dohvati_slobodne_sobe(3, '2026-08-01', '2026-08-03');
