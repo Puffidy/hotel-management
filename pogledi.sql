@@ -359,3 +359,52 @@ FROM usluga u
 JOIN normativ n ON u.id = n.usluga_id
 JOIN artikl a ON n.artikl_id = a.id
 ORDER BY u.naziv, a.naziv;
+
+-- -------------------------------------------
+-- 19. pogled zaposlenici recepcija
+
+CREATE OR REPLACE VIEW view_zaposlenici_recepcija AS
+SELECT 
+    id, 
+    ime, 
+    prezime, 
+    CONCAT(ime, ' ', prezime) AS puno_ime,
+    korisnicko_ime
+FROM zaposlenik
+WHERE odjel_id = 1; -- 1 = Recepcija
+
+-- -----------------------------------------
+-- 20. pogled zaposlenici konobari
+
+CREATE OR REPLACE VIEW view_zaposlenici_konobari AS
+SELECT 
+    id, 
+    ime, 
+    prezime, 
+    CONCAT(ime, ' ', prezime) AS puno_ime
+FROM zaposlenik
+WHERE odjel_id = 5; -- 5 = Restoran
+
+-- ------------------------------------
+-- 21. pogled zaposlenici domacinstvo
+
+CREATE OR REPLACE VIEW view_zaposlenici_domacinstvo AS
+SELECT 
+    id, 
+    ime, 
+    prezime, 
+    CONCAT(ime, ' ', prezime) AS puno_ime
+FROM zaposlenik
+WHERE odjel_id = 2; -- 2 = Domaćinstvo
+
+-- -------------------------------------
+-- 22. pogled zaposlenici tehničari
+
+CREATE OR REPLACE VIEW view_zaposlenici_odrzavanje AS
+SELECT 
+    id, 
+    ime, 
+    prezime, 
+    CONCAT(ime, ' ', prezime) AS puno_ime
+FROM zaposlenik
+WHERE odjel_id = 3;

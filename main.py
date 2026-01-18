@@ -74,7 +74,6 @@ menu = st.sidebar.radio(
 # =============================================================================
 if menu == "📅 RECEPCIJA (Rezervacije)":
     
-    # SADA IMAMO 3 TABA: Nova, Lista (Upravljanje), Novi Gost
     tab_nova, tab_lista, tab_gost, tab_usluge = st.tabs(["➕ Nova Rezervacija", "📋 Lista i Akcije", "👤 Novi Gost", "💆 Dodatne Usluge"])
     
     # --- TAB 1: NOVA REZERVACIJA ---
@@ -82,11 +81,15 @@ if menu == "📅 RECEPCIJA (Rezervacije)":
         st.header("Nova Rezervacija")
         st.info("Ovdje kreirate novu rezervaciju. Sustav automatski računa cijenu i provjerava zauzeće.")
 
-        # 1. Dohvat podataka 
+        # 1. Dohvat podataka
+         
+        recepcioneri = run_query("SELECT id, puno_ime FROM view_zaposlenici_recepcija")
+        recep_dict = {row['puno_ime']: row['id'] for i, row in recepcioneri.iterrows()}
+
+        odabrani_recep_lbl = st.selectbox("Rezervaciju kreira (Recepcioner):", list(recep_dict.keys()))
+
         gosti_df = run_query("SELECT id, ime, prezime FROM gost")
         
-        # --- IZMJENA: Dohvaćamo SVE sobe (i prljave i zauzete) koristeći novi View ---
-        # Stari kod je imao "WHERE status = 'SLOBODNA'", to smo maknuli.
         sobe_df = run_query("SELECT * FROM view_sve_sobe_dropdown")
         
         promocije_df = run_query("SELECT id, naziv, popust_postotak FROM promocija WHERE aktivna=1")
@@ -94,8 +97,6 @@ if menu == "📅 RECEPCIJA (Rezervacije)":
         # Rječnici za dropdown menije
         gost_dict = {f"{row['ime']} {row['prezime']} (ID: {row['id']})": row['id'] for i, row in gosti_df.iterrows()}
         
-        # --- IZMJENA: U labelu dodajemo status sobe da se vidi je li zauzeta ---
-        # Sada će pisati npr: "Soba 101 (Single) - [ZAUZETA]"
         soba_dict = {
             f"Soba {row['broj']} ({row['tip_sobe']}) - [{row['status']}]": row['id'] 
             for i, row in sobe_df.iterrows()
@@ -139,6 +140,7 @@ if menu == "📅 RECEPCIJA (Rezervacije)":
             # --- TANKI KLIJENT: Slanje podataka proceduri ---
             
             # Priprema parametara
+            z_id = int(recep_dict[odabrani_recep_lbl])
             g_id = int(gost_dict[odabrani_gost_lbl])
             s_id = int(soba_dict[odabrana_soba_lbl])
             
@@ -147,9 +149,8 @@ if menu == "📅 RECEPCIJA (Rezervacije)":
             br_osoba = int(broj_osoba)
             
             # Lista parametara mora odgovarati redoslijedu u 'proc_kreiraj_rezervaciju'
-            params = [g_id, s_id, p_id, datum_dolaska, datum_odlaska, br_osoba, napomena]
+            params = [g_id, s_id, p_id, datum_dolaska, datum_odlaska, br_osoba, napomena, z_id]
             
-            # Poziv procedure umjesto SQL INSERT-a
             success, msg = run_action("proc_kreiraj_rezervaciju", params, is_procedure=True)
             
             if success:
@@ -246,7 +247,7 @@ if menu == "📅 RECEPCIJA (Rezervacije)":
                         else:
                             st.error(msg)
 
-    # --- TAB 3: NOVI GOST (BEZ PYTHON VALIDACIJE) ---
+    # --- TAB 3: NOVI GOST ---
     with tab_gost:
         st.header("Unos novog gosta")
         st.info("Unesite podatke. Validaciju (obavezna polja) vrši baza podataka.")
@@ -327,10 +328,8 @@ if menu == "📅 RECEPCIJA (Rezervacije)":
                 p_grad = grad_dict.get(ng_grad)
                 p_drz = drz_dict.get(ng_drzava)
                 
-                # Parametri moraju odgovarati proceduri 'proc_kreiraj_gosta'
                 params = [ng_ime, ng_prezime, p_dok, ng_dok_broj, p_grad, ng_adresa, p_drz]
                 
-                # Poziv procedure umjesto SQL INSERT-a
                 succ, msg = run_action("proc_kreiraj_gosta", params, is_procedure=True)
                 
                 if succ:
@@ -339,7 +338,6 @@ if menu == "📅 RECEPCIJA (Rezervacije)":
                     time.sleep(1.5)
                     st.rerun()
                 else:
-                    # Baza javlja grešku (npr. NULL vrijednost)
                     st.error(f"Greška baze: {msg}")
 
             except Exception as e:
@@ -383,8 +381,6 @@ if menu == "📅 RECEPCIJA (Rezervacije)":
                     r_id = rez_dict[odabrana_rez]
                     u_id = usluga_dict[odabrana_usluga]
                     
-                    # Poziv procedure ostaje isti, to je bilo dobro
-                    # Params: rezervacija_id, usluga_id, kolicina, napomena
                     succ, msg = run_action("proc_dodaj_uslugu_na_sobu", [r_id, u_id, kolicina_usluge, napomena_usluge], is_procedure=True)
                     
                     if succ:
@@ -403,25 +399,38 @@ elif menu == "🍽️ RESTORAN (Narudžbe & Kuhinja)":
     # --- TAB 1: OTVARANJE ---
     with tab_otvori:
         st.subheader("Otvaranje nove narudžbe")
+        
+        # 1. DOHVAT KONOBARA
+        konobari = run_query("SELECT id, puno_ime FROM view_zaposlenici_konobari")
+        konobar_dict = {row['puno_ime']: row['id'] for i, row in konobari.iterrows()}
+        
+        # 2. DOHVAT STOLOVA
         stolovi = run_query("SELECT id, broj_stola, lokacija FROM restoran_stol")
         stol_dict = {f"Stol {row['broj_stola']} ({row['lokacija']})": row['id'] for i, row in stolovi.iterrows()}
         
-        odabrani_stol_lbl = st.selectbox("Odaberi stol", list(stol_dict.keys()))
+        col_res1, col_res2 = st.columns(2)
+        with col_res1:
+            odabrani_konobar_lbl = st.selectbox("Konobar:", list(konobar_dict.keys()))
+        with col_res2:
+            
+            odabrani_stol_lbl = st.selectbox("Odaberi stol", list(stol_dict.keys()))
         
         if st.button("Otvori narudžbu na stolu"):
+
+            k_id = int(konobar_dict[odabrani_konobar_lbl]) 
             stol_id = int(stol_dict[odabrani_stol_lbl])
-            # Poziv procedure: proc_otvori_narudzbu(zaposlenik, stol, OUT id)
-            # Kroz Python connector callproc radi malo drugačije s OUT parametrima,
-            # pa ćemo koristiti wrapper varijablu u sesiji
+            
             try:
                 conn = get_connection()
                 cursor = conn.cursor()
-                # 28 = ID konobara (npr. Marko)
-                cursor.callproc('proc_otvori_narudzbu', [28, stol_id, 0]) 
+                
+                cursor.callproc('proc_otvori_narudzbu', [k_id, stol_id, 0]) 
                 conn.commit()
                 st.toast("Narudžba otvorena!")
+                
             except mysql.connector.Error as err:
-                st.error(f"Greška: {err.msg}")
+                st.error(f"SQL Error [{err.errno}]: {err.msg}")
+                
             finally:
                 if 'conn' in locals() and conn.is_connected():
                     cursor.close()
@@ -465,7 +474,7 @@ elif menu == "🍽️ RESTORAN (Narudžbe & Kuhinja)":
                     st.toast(f"✅ Uspješno dodano: {kol} kom!", icon='🛒')
                     
                     import time
-                    time.sleep(0.5) # Kratka pauza da vidite poruku
+                    time.sleep(0.5) # Kratka pauza da se vidi poruka
                     st.rerun()      # Osvježi da se vidi u tablici dolje
                 else:
                     st.error(msg)
@@ -475,8 +484,6 @@ elif menu == "🍽️ RESTORAN (Narudžbe & Kuhinja)":
             
             n_id_view = int(narudzba_dict[odabrana_narudzba_lbl])
             
-            # --- ZAMJENA SIROVOG SQL-a POZIVOM POGLEDA ---
-            # Koristimo %s parametar umjesto f-stringa radi sigurnosti
             stavke_na_racunu = run_query("""
                 SELECT naziv_artikla, kolicina, cijena_jedinicna, ukupno_stavka, status_pripreme 
                 FROM view_stavke_narudzbe 
@@ -501,20 +508,16 @@ elif menu == "🍽️ RESTORAN (Narudžbe & Kuhinja)":
             def get_icon(kat_id):
                 return "🍔" if kat_id == 1 else "🍺" if kat_id == 2 else "📦"
 
-            # PRILAGODBA IMENA STUPACA IZ POGLEDA:
-            # 'id' -> 'stavka_id'
-            # 'naziv' -> 'naziv_jela'
-            
             stavka_dict = {
                 f"{get_icon(row['kategorija_id'])} {row['naziv_jela']} (Kol: {row['kolicina']}) -> {row['status_pripreme']}": row['stavka_id'] 
                 for i, row in stavke_df.iterrows()
             }
             
             odabrana_oznaka = st.selectbox("Odaberi stavku za obradu:", list(stavka_dict.keys()))
+            
             odabrani_id = int(stavka_dict[odabrana_oznaka])
             
-            # --- OVDJE JE BILA GREŠKA ---
-            # Filtriramo po 'stavka_id', a ne po 'id'
+
             redak = stavke_df[stavke_df['stavka_id'] == odabrani_id].iloc[0]
             
             kategorija = int(redak['kategorija_id'])
@@ -522,19 +525,29 @@ elif menu == "🍽️ RESTORAN (Narudžbe & Kuhinja)":
             
             col_action1, col_action2 = st.columns(2)
 
-            # Pomoćna funkcija za poziv procedure
             def izvrsi_proces_kuhinje(proc_name, stavka_id):
+                conn = None
+                cursor = None
                 try:
                     conn = get_connection()
                     cursor = conn.cursor()
-                    args = [stavka_id, ''] # Drugi parametar je OUT p_poruka
+                    
+                    s_id_fixed = int(stavka_id)
+                    
+                    args = [s_id_fixed, ''] 
                     res = cursor.callproc(proc_name, args)
                     conn.commit()
-                    return res[1] # Vraćamo poruku iz baze
+                    poruka_iz_baze = res[1]
+                    
+                    if poruka_iz_baze and "Greška" in poruka_iz_baze:
+                        return f"SQL Error [Logic]: {poruka_iz_baze}"
+                    
                 except mysql.connector.Error as err:
-                    return f"Greška baze: {err.msg}"
+                    return f"SQL Error [{err.errno}]: {err.msg}"
+                except Exception as e:
+                    return f"System Error: {str(e)}"
                 finally:
-                    if 'conn' in locals() and conn.is_connected():
+                    if 'conn' in locals() and conn and conn.is_connected():
                         cursor.close()
                         conn.close()
 
@@ -545,7 +558,7 @@ elif menu == "🍽️ RESTORAN (Narudžbe & Kuhinja)":
                         if st.button("👨‍🍳 Stavi kuhati (Start Priprema)"):
                             msg = izvrsi_proces_kuhinje('proc_zapocni_pripremu', odabrani_id)
                             
-                            if "Greška" in msg:
+                            if "Greška" in msg or "Error" in msg:
                                 st.error(msg)
                             else:
                                 st.toast(f"Kuhinja: {msg}", icon='🔥')
@@ -558,7 +571,7 @@ elif menu == "🍽️ RESTORAN (Narudžbe & Kuhinja)":
                     if st.button("🔔 Jelo gotovo - Posluži", type="primary"):
                         msg = izvrsi_proces_kuhinje('proc_posluzi_stavku', odabrani_id)
                         
-                        if "Greška" in msg:
+                        if "Greška" in msg or "Error" in msg:
                             st.error(msg)
                         else:
                             st.toast(f"Servis: {msg}", icon='🍽️')
@@ -571,7 +584,7 @@ elif menu == "🍽️ RESTORAN (Narudžbe & Kuhinja)":
                 if st.button("🍺 Natoči i Posluži", type="primary"):
                     msg = izvrsi_proces_kuhinje('proc_posluzi_stavku', odabrani_id)
                     
-                    if "Greška" in msg:
+                    if "Greška" in msg or "Error" in msg:
                         st.error(msg) 
                     else:
                         st.toast(f"Šank: {msg}", icon='✅')
@@ -597,7 +610,7 @@ elif menu == "🍽️ RESTORAN (Narudžbe & Kuhinja)":
             odabrana_za_platiti_lbl = st.selectbox("Odaberi stol za naplatu", list(nar_naplata_dict.keys()))
             nar_id_za_platiti = int(nar_naplata_dict[odabrana_za_platiti_lbl])
             
-            # --- NOVO: Prikaz stavki te narudžbe PRIJE naplate ---
+            # --- Prikaz stavki te narudžbe PRIJE naplate ---
             st.markdown("---")
             st.write("📝 **Sadržaj narudžbe:**")
             
@@ -632,7 +645,7 @@ elif menu == "🍽️ RESTORAN (Narudžbe & Kuhinja)":
                 if nacin_placanja == "NA SOBU":
                     soba_broj = st.number_input("Unesi broj sobe gosta:", min_value=100, max_value=505, step=1)
                 
-                st.write("") # Razmak
+                st.write("")
                 st.write("")
                 if st.button("💳 Izvrši naplatu", type="primary"):
                     
@@ -644,7 +657,7 @@ elif menu == "🍽️ RESTORAN (Narudžbe & Kuhinja)":
                         cursor = conn.cursor()
                         
                         # Poziv procedure 'proc_naplati_narudzbu'
-                        args = [nar_id_za_platiti, sql_nacin, sql_soba, '']
+                        args = [int(nar_id_za_platiti), sql_nacin, sql_soba, '']
                         result_args = cursor.callproc('proc_naplati_narudzbu', args)
                         conn.commit()
                         
@@ -658,7 +671,7 @@ elif menu == "🍽️ RESTORAN (Narudžbe & Kuhinja)":
                             st.rerun()
                         
                     except mysql.connector.Error as err:
-                        st.error(f"Sistemska greška: {err.msg}")
+                        st.error(f"SQL Error [{err.errno}]: {err.msg}")
                         
                     finally:
                         if 'conn' in locals() and conn.is_connected():
@@ -671,15 +684,13 @@ elif menu == "🍽️ RESTORAN (Narudžbe & Kuhinja)":
 elif menu == "📊 STANJE (Sobe i Logovi)":
     st.header("Upravljanje stanjem hotela")
     
-    # Kreiramo tabove za bolju preglednost
     tab_pregled, tab_domacinstvo, tab_odrzavanje, tab_provjera_dostupnosti = st.tabs(["👁️ Pregled Stanja", "🧹 Domaćinstvo", "🛠️ Održavanje (Kvarovi)", "📆 Provjera dostupnosti"])
 
-    # --- TAB 1: PREGLED SOBA I LOGOVA (Ovo već imaš, samo je sada u tabu) ---
+    # --- TAB 1: PREGLED SOBA I LOGOVA ---
     with tab_pregled:
         st.subheader("Trenutno stanje soba")
-        # --- OVO LIJEPIŠ UMJESTO STAROG ---
         try:
-            # 1. Dohvaćamo podatke iz NOVOG pogleda koji već sadrži hex kodove boja (npr. #ff0000)
+            # 1. Dohvaćamo podatke iz pogleda koji već sadrži hex kodove boja
             df_boje = run_query("SELECT broj, stanje, hex_boja FROM view_status_soba_boje ORDER BY broj")
             
             # 2. Prikazujemo tablicu, ali boju čitamo direktno iz stupca 'hex_boja'
@@ -691,18 +702,18 @@ elif menu == "📊 STANJE (Sobe i Logovi)":
                 use_container_width=True, 
                 height=400
             )
-        except Exception as e:
-            st.error(f"Greška prikaza: {e}. Provjeri jesi li kreirao view 'view_status_soba_boje' u bazi.")
+        except mysql.connector.Error as err:
+            st.error(f"SQL Error [{err.errno}]: {err.msg}")
+        except Exception as e:      
+            st.error(f"System Error: {e}")
 
         st.markdown("---")
         st.subheader("Povijest promjena (Logovi)")
         logs = run_query("SELECT * FROM log_rezervacije ORDER BY vrijeme_promjene DESC LIMIT 20")
         st.dataframe(logs, use_container_width=True)
 
-        # Gumb za čišćenje starih logova (Bonus funkcionalnost iz procedure.sql)
+        # Gumb za čišćenje starih logova
         if st.button("🗑️ Očisti logove starije od 90 dana"):
-            # Poziv procedure s OUT parametrom zahtijeva malo drugačiji pristup u Pythonu,
-            # ali za jednostavnost možemo pozvati proceduru i ignorirati ispis ili ga simulirati.
             try:
                 conn = get_connection()
                 cursor = conn.cursor()
@@ -715,10 +726,12 @@ elif menu == "📊 STANJE (Sobe i Logovi)":
                 conn.close()
                 time.sleep(1)
                 st.rerun()
+            except mysql.connector.Error as err:
+                st.error(f"SQL Error [{err.errno}]: {err.msg}")
             except Exception as e:
-                st.error(f"Greška pri brisanju: {e}")
+                st.error(f"Python Error: {e}")
 
-    # --- TAB 2: DOMAĆINSTVO (Ovo već imaš, malo uljepšano) ---
+    # --- TAB 2: DOMAĆINSTVO ---
     with tab_domacinstvo:
         st.subheader("Lista soba za čišćenje")
         
@@ -733,24 +746,27 @@ elif menu == "📊 STANJE (Sobe i Logovi)":
             
             with col_d2:
                 st.write("### Akcija Čišćenja")
+                sobarice = run_query("SELECT id, puno_ime FROM view_zaposlenici_domacinstvo")
+                sobarica_dict = {row['puno_ime']: row['id'] for i, row in sobarice.iterrows()}
+            
+                odabrana_sobarica_lbl = st.selectbox("Očistila:", list(sobarica_dict.keys()))
+
                 soba_clean_dict = {f"Soba {row['broj']}": row['id'] for i, row in prljave_sobe.iterrows()}
                 odabrana_soba_clean = st.selectbox("Označi očišćeno:", list(soba_clean_dict.keys()))
                 
-                # Dodajemo opciju prijave štete koju si tražio (puni tablicu ciscenje_dnevni_nalog)
+                # Dodajemo opciju prijave štete (puni tablicu ciscenje_dnevni_nalog)
                 prijavi_stetu = st.checkbox("Prijavi štetu u sobi?")
                 opis_stete = ""
                 if prijavi_stetu:
                     opis_stete = st.text_input("Opis štete (npr. razbijena čaša):")
 
                 if st.button("✨ Soba Očišćena i Pregledana", type="primary"):
-                    s_id = soba_clean_dict[odabrana_soba_clean]
-                    
-                    # Logika je sada u bazi! 
-                    # Šaljemo: ID sobe, Opis štete (može bit prazan), ID zaposlenika (hardcodiran 28 za demo)
+                    s_id = int(soba_clean_dict[odabrana_soba_clean])
+                    z_id = int(sobarica_dict[odabrana_sobarica_lbl])
                     
                     try:
-                        # Poziv nove procedure 'proc_evidentiraj_ciscenje'
-                        success, msg = run_action("proc_evidentiraj_ciscenje", [s_id, opis_stete, 28], is_procedure=True)
+                        # Poziv procedure 'proc_evidentiraj_ciscenje'
+                        success, msg = run_action("proc_evidentiraj_ciscenje", [s_id, opis_stete, z_id], is_procedure=True)
                         
                         if success:
                             st.toast(f"✅ Soba {odabrana_soba_clean} je čista! (Šteta evidentirana: {'DA' if opis_stete else 'NE'})")
@@ -761,7 +777,7 @@ elif menu == "📊 STANJE (Sobe i Logovi)":
                     except Exception as e:
                          st.error(f"Sistemska greška: {e}")
 
-    # --- TAB 3: ODRŽAVANJE (AŽURIRANO S POGLEDIMA) ---
+    # --- TAB 3: ODRŽAVANJE ---
     with tab_odrzavanje:
         st.header("🛠️ Tehnička služba")
         st.info("Ovdje prijavljujete kvarove. Soba s aktivnim kvarom postaje 'IZVAN_FUNKCIJE'.")
@@ -772,55 +788,50 @@ elif menu == "📊 STANJE (Sobe i Logovi)":
         with col_kvar1:
             st.subheader("Nova prijava kvara")
             with st.form("prijava_kvara"):
-                # 1. KORISTIMO NOVI POGLED: view_lista_soba_jednostavna
+                
+                # 1. Odabir sobe
                 sve_sobe = run_query("SELECT * FROM view_lista_soba_jednostavna")
                 soba_dict_kvar = {f"Soba {row['broj']}": row['id'] for i, row in sve_sobe.iterrows()}
                 odabrana_soba_kvar = st.selectbox("Soba:", list(soba_dict_kvar.keys()))
                 
-                # 2. KORISTIMO NOVI POGLED: view_osoblje_odrzavanja (Umjesto WHERE odjel_id=3)
-                domari = run_query("SELECT * FROM view_osoblje_odrzavanja")
+                # 2. Odabir servisera
+                domari = run_query("SELECT id, puno_ime FROM view_zaposlenici_odrzavanje")
                 
                 if not domari.empty:
                     domar_dict = {row['puno_ime']: row['id'] for i, row in domari.iterrows()}
-                    odabrani_domar = st.selectbox("Zaduženi serviser:", list(domar_dict.keys()))
+                    odabrani_domar = st.selectbox("Prijavio / Zadužen serviser:", list(domar_dict.keys()))
                 else:
                     st.error("Nema zaposlenika u odjelu Održavanje.")
                     domar_dict = {}
                     odabrani_domar = None
 
-                opis_kvara = st.text_area("Opis kvara:", placeholder="npr. Klima ne hladi...")
+                opis_kvara = st.text_area("Opis kvara:", placeholder="npr. Klima ne hladi, puknuta cijev...")
                 korisnik_kriv = st.checkbox("Kvar uzrokovao gost (naplata)?")
 
+                # GUMB ZA SLANJE
                 if st.form_submit_button("🚨 Prijavi kvar"):
                     if odabrani_domar and opis_kvara:
-                        s_id_kvar = soba_dict_kvar[odabrana_soba_kvar]
-                        d_id = domar_dict[odabrani_domar]
+                        s_id = int(soba_dict_kvar[odabrana_soba_kvar])
+                        z_id = int(domar_dict[odabrani_domar])
+                        placa_gost = 1 if korisnik_kriv else 0
                         
-                        # INSERT i UPDATE ostaju isti (to su akcije, ne pogledi)
-                        sql_insert = """
-                            INSERT INTO servis_dnevni_nalog (zaposlenik_id, soba_id, opis, korisnik_placa, rijeseno)
-                            VALUES (%s, %s, %s, %s, 0)
-                        """
-                        res1, msg1 = run_action(sql_insert, [d_id, s_id_kvar, opis_kvara, 1 if korisnik_kriv else 0])
+                        params = [z_id, s_id, opis_kvara, placa_gost]
                         
-                        # Ovo aktivira tvoj trigger 'trg_sprijeci_rezervaciju_kvar'
-                        res2, msg2 = run_action("UPDATE soba SET status = 'IZVAN_FUNKCIJE' WHERE id = %s", [s_id_kvar])
+                        success, msg = run_action("proc_prijavi_kvar", params, is_procedure=True)
                         
-                        if res1 and res2:
-                            st.success(f"Kvar prijavljen za sobu {odabrana_soba_kvar}.")
-                            time.sleep(1)
+                        if success:
+                            st.success(f"Kvar uspješno prijavljen! Soba {odabrana_soba_kvar} je sada IZVAN FUNKCIJE.")
+                            time.sleep(1.5)
                             st.rerun()
                         else:
-                            st.error(f"Greška: {msg1}")
+                            st.error(msg)
                     else:
-                        st.warning("Opišite kvar.")
+                        st.warning("Molimo unesite opis kvara i odaberite servisera.")
 
         # LISTA AKTIVNIH KVAROVA
         with col_kvar2:
             st.subheader("📋 Aktivni nalozi")
             
-            # 3. KORISTIMO NOVI POGLED: view_aktivni_kvarovi
-            # Python kod je sada drastično kraći i čišći!
             kvarovi_df = run_query("SELECT * FROM view_aktivni_kvarovi ORDER BY datum_naloga DESC")
             
             if kvarovi_df.empty:
@@ -847,11 +858,9 @@ elif menu == "📊 STANJE (Sobe i Logovi)":
                     run_action("UPDATE servis_dnevni_nalog SET rijeseno = 1 WHERE id = %s", [nalog_id])
                     
                     if vratiti_u_funkciju:
-                        # Dohvaćamo soba_id iz našeg poglega (view_aktivni_kvarovi ima stupac soba_id)
-                        # Ne moramo raditi novi query, možemo filtrirati dataframe ili napraviti brzi lookup
+
                         soba_id_za_fix = kvarovi_df[kvarovi_df['nalog_id'] == nalog_id].iloc[0]['soba_id']
                         
-                        # Vraćamo sobu u funkciju
                         run_action("UPDATE soba SET status = 'SLOBODNA' WHERE id = %s", [int(soba_id_za_fix)])
                     
                     st.toast("Nalog zatvoren.")
@@ -895,8 +904,7 @@ elif menu == "📈 IZVJEŠTAJI (Financije & Zalihe)":
     with tab_zalihe:
         st.header("Stanje Skladišta")
         
-        # 1. Prikaz kritičnih zaliha (koristimo tvoj POGLED iz pogledi.sql)
-        # Ako pogled ne postoji, aplikacija će pasti, pa koristimo try-except ili običan query
+        # 1. Prikaz kritičnih zaliha
         try:
             df_low = run_query("SELECT * FROM low_stock_alert")
             if not df_low.empty:
@@ -910,11 +918,10 @@ elif menu == "📈 IZVJEŠTAJI (Financije & Zalihe)":
         st.markdown("---")
         st.subheader("Svi Artikli")
 
-        # 2. Glavna tablica zaliha - SADA KORISTIMO NOVI POGLED
-        # Jednostavan select, sortiramo po stanju da vidimo čega ima najmanje
+        # 2. Glavna tablica zaliha
         df_artikli = run_query("SELECT * FROM pregled_zaliha_skladiste ORDER BY stanje_zaliha ASC")
         
-        # Funkcija za bojanje redaka (isto kao prije)
+        # Funkcija za bojanje redaka 
         def highlight_stock(val):
             color = '#ffcdd2' if val <= 5 else '#fff9c4' if val <= 20 else ''
             return f'background-color: {color}'
@@ -943,7 +950,7 @@ elif menu == "📈 IZVJEŠTAJI (Financije & Zalihe)":
                 # Filtriranje za prikaz tablice sastojaka
                 prikaz_df = df_recepti[df_recepti['naziv_jela'] == odabrano_jelo]
                 
-                # Prikaz tablice (samo informativno, frontend ne zbraja ovo za maržu)
+                # Prikaz tablice
                 st.dataframe(
                     prikaz_df[['namirnica', 'kolicina_potrosnje', 'jedinica_mjere', 'trosak_sastojka']]
                     .style.format({"kolicina_potrosnje": "{:.3f}", "trosak_sastojka": "{:.2f} €"}),
@@ -955,12 +962,10 @@ elif menu == "📈 IZVJEŠTAJI (Financije & Zalihe)":
                 jelo_id = prikaz_df.iloc[0]['jelo_id']
                 
                 # Pozivamo funkciju iz baze da nam vrati maržu
-                # Primjeti: Ne računamo (cijena - trosak) ovdje!
                 df_marza = run_query(f"SELECT izracunaj_marzu_jela({jelo_id}) as marza")
                 marza_iz_baze = float(df_marza.iloc[0]['marza'])
                 
-                # Za prikaz troška i cijene možemo koristiti sumu iz tablice ili isto dohvat iz baze.
-                # Radi jednostavnosti prikaza, ovdje sumiramo trošak vizualno, ali marža je došla iz SQL-a.
+
                 ukupni_trosak_display = prikaz_df['trosak_sastojka'].sum()
                 prodajna_cijena_display = ukupni_trosak_display + marza_iz_baze
                 
@@ -969,7 +974,6 @@ elif menu == "📈 IZVJEŠTAJI (Financije & Zalihe)":
                 col_t1.metric("Trošak namirnica", f"{ukupni_trosak_display:.2f} €")
                 col_t2.metric("Prodajna cijena", f"{prodajna_cijena_display:.2f} €")
                 
-                # Ovdje prikazujemo vrijednost direktno iz SQL funkcije
 
                 col_t3.metric("Bruto marža", f"{marza_iz_baze:.2f} €")
                 
@@ -979,7 +983,7 @@ elif menu == "📈 IZVJEŠTAJI (Financije & Zalihe)":
         except Exception as e:
              st.error(f"Nedostaju SQL objekti (vjerojatno view 'view_recepture_detaljno' ili funkcija). Greška: {e}")
 
-    # --- TAB 2: RAČUNI (Ažurirano s novim Pogledom) ---
+    # --- TAB 2: RAČUNI ---
     with tab_racuni:
         st.header("Pregled Računa")
         
@@ -989,12 +993,9 @@ elif menu == "📈 IZVJEŠTAJI (Financije & Zalihe)":
         with col_fil2:
             filter_status = st.selectbox("Filtriraj po statusu:", ["SVI", "PLACENO", "OTVOREN", "STORNIRANO"])
             
-        # SADA KORISTIMO POGLED 'pregled_svih_racuna'
-        # WHERE 1=1 je trik da možemo lako lijepiti AND uvjete
         sql_base = "SELECT * FROM pregled_svih_racuna WHERE 1=1"
         params = []
         
-        # Dinamičko dodavanje filtera
         if filter_tip != "SVI":
             sql_base += " AND tip_racuna = %s"
             params.append(filter_tip)
@@ -1026,15 +1027,10 @@ elif menu == "📈 IZVJEŠTAJI (Financije & Zalihe)":
                 lista_racuna = df_racuni['racun_id'].tolist()
                 odabrani_id_racuna = st.selectbox("Odaberi ID računa za prikaz stavki:", lista_racuna)
                 
-                # --- ZAMJENA SIROVOG SQL-a POGLEDOM ---
-                # Sada samo filtriramo pogled 'view_detalji_racuna'
-                stavke_df = run_query("""
-                    SELECT tip_stavke, opis, kolicina, cijena_jedinicna, iznos_ukupno
-                    FROM view_detalji_racuna
-                    WHERE racun_id = %s
-                """, [int(odabrani_id_racuna)])
+                query = "SELECT * FROM view_detalji_racuna WHERE racun_id = %s"
+                stavke_df = run_query(query, [int(odabrani_id_racuna)])
                 
-                # Formatiranje i prikaz (ostaje isto)
+                # Formatiranje i prikaz 
                 st.table(stavke_df.style.format({"cijena_jedinicna": "{:.2f} €", "iznos_ukupno": "{:.2f} €"}))
                 
                 total = stavke_df['iznos_ukupno'].sum()
