@@ -230,7 +230,7 @@ BEGIN
 
     -- sigurnosna provjera: ako nema otvorenog racuna prekini proceduru
     IF v_racun_id IS NULL THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = "Ne postoji otvoreni račun za ovu rezervaciju."
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = "Ne postoji otvoreni račun za ovu rezervaciju.";
     END IF;
 
     -- pozivanje postojece funkcije za stavku

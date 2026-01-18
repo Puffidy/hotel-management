@@ -28,7 +28,7 @@ DELIMITER ;
 
 
 
-DROP FUNCTION IF EXISTS pdv_koji_moramo_platiti_za_uslugu;
+
 DELIMITER // 
 
 
