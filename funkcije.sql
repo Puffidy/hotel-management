@@ -190,3 +190,46 @@ INSERT INTO rezervacija (id, gost_nositelj_id, zaposlenik_id, soba_id, promocija
 (48, 2, 4, 50, NULL, '2026-05-01 10:35:00', '2026-07-30', '2026-08-05', NULL, NULL, 4, 'POTVRDJENA', 'Test Data - Room 50');
 
 SELECT provjeri_dostupnost_kapaciteta(4, '2026-08-01', '2026-08-03') AS Mogu_Li_Rezervirati_Kapacitet;
+
+
+DROP FUNCTION IF EXISTS dohvati_ukupan_iznos_rezervacije;
+-- funkcija koja dohvaća ukupan iznos rezervacije -- ova funkcija je jednostavna ali cemo je iskoristi u proceduri i napraviti transakciju od iste 
+DELIMITER //
+CREATE FUNCTION dohvati_ukupan_iznos_rezervacije(p_rezervacija_id INT) RETURNS DECIMAL(10,2)
+DETERMINISTIC
+READS SQL DATA
+BEGIN
+    DECLARE v_ukupno DECIMAL (10,2);
+
+    -- varijable za izracun boravisne
+    DECLARE v_iznos_boravisne DECIMAL(10,2) DEFAULT 0.00;
+    DECLARE v_broj_osoba INT;
+    DECLARE v_broj_nocenja INT;
+    DECLARE v_cijena_bp DECIMAL(10,2) DEFAULT 2.00;
+
+
+    -- stavke iz tablice stavka_racuna usluge, smjestaj, ostalo
+    SELECT COALESCE(SUM(stavka_racuna.iznos_ukupno), 0)
+    INTO v_ukupno
+    FROM stavka_racuna
+    JOIN racun ON stavka_racuna.racun_id = racun.id
+    WHERE racun.rezervacija_id = p_rezervacija_id;
+
+    -- izracun boravisne pristojbe
+    SELECT rezervacija.broj_osoba, 
+           DATEDIFF(rezervacija.kraj_datum, rezervacija.pocetak_datum),
+           COALESCE(cjenik_soba.boravisna_pristojba_po_osobi, 2.00)
+    INTO v_broj_osoba, v_broj_nocenja, v_cijena_bp
+    FROM rezervacija
+    JOIN soba ON rezervacija.soba_id = soba.id
+    JOIN cjenik_soba ON soba.tip_sobe_id = cjenik_soba.tip_sobe_id
+    WHERE rezervacija.id = p_rezervacija_id
+    LIMIT 1;
+
+    SET v_iznos_boravisne = v_broj_osoba * v_broj_nocenja * v_cijena_bp;
+
+    RETURN (v_ukupno + v_iznos_boravisne);
+END //
+DELIMITER ;
+
+-- select dohvati_ukupan_iznos_rezervacije(1) as ukupno_za_rezervaciju_1;

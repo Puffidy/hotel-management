@@ -194,7 +194,7 @@ DELIMITER ;
 CALL sp_primijeni_promociju(1, 1);  -- rezervacija_id = 1, promocija_id = 1
 
 
--- Procedura Alma
+-- Procedura Alma - Dohvati slobodne sobe za zadani broj osoba i datumski interval
 DROP PROCEDURE IF EXISTS dohvati_slobodne_sobe;
 DELIMITER //
 
@@ -210,3 +210,51 @@ END //
 DELIMITER ;
 
 CALL dohvati_slobodne_sobe(3, '2026-08-01', '2026-08-03');
+
+
+-- Proc Alma - 
+DROP PROCEDURE IF EXISTS generiranje_finalnog_racuna_za_rezervaciju;
+DELIMITER //
+CREATE PROCEDURE generiranje_finalnog_racuna_za_rezervaciju(IN p_rezervacija_id INT, IN p_nacin_placanja VARCHAR(25))
+BEGIN
+    DECLARE v_ukupni_iznos DECIMAL(10,2);
+    DECLARE v_racun_id INT;
+
+
+    -- pronadi racun koji je vezan za rezervaciju i koji je otvoren
+    SELECT id INTO v_racun_id
+    FROM racun
+    WHERE rezervacija_id = p_rezervacija_id
+      AND status_racuna = 'OTVOREN'
+    LIMIT 1;
+
+    -- sigurnosna provjera: ako nema otvorenog racuna prekini proceduru
+    IF v_racun_id IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = "Ne postoji otvoreni račun za ovu rezervaciju."
+    END IF;
+
+    -- pozivanje postojece funkcije za stavku
+    SET v_ukupni_iznos = dohvati_ukupan_iznos_rezervacije(p_rezervacija_id);
+
+    -- transakcija za sve ili nista
+    START TRANSACTION;
+    -- azuriranje racuna s konacnim iznosom
+
+        UPDATE racun
+        SET iznos_ukupno = v_ukupni_iznos,
+            status_racuna = 'PLACENO',
+            nacin_placanja = p_nacin_placanja,
+            datum_izdavanja = NOW()
+        WHERE id = v_racun_id;
+
+        -- zatvaranje rezervacije
+        UPDATE rezervacija
+        SET status = 'ZAVRSENA'
+        WHERE id = p_rezervacija_id;
+
+        COMMIT;
+
+        SELECT p_rezervacija_id AS 'ID Rezervacije', v_racun_id AS 'ID Računa', v_ukupni_iznos AS 'Ukupni Iznos Računa', 'Uspjesno generiran račun i zatvorena rezervacija.' AS 'Poruka računa';
+
+END //
+
