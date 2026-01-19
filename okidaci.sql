@@ -620,6 +620,7 @@ BEGIN
     INSERT INTO racun
         (rezervacija_id, tip_racuna, datum_izdavanja, iznos_ukupno, status_racuna, nacin_placanja)
     VALUES (NEW.id, 'HOTEL', NOW(), 0.00, 'OTVOREN', 'GOTOVINA');
+    CALL dodaj_stavke_koje_fale_na_racun(NEW.id, LAST_INSERT_ID());
 END //
 DELIMITER ;
 

@@ -1074,7 +1074,6 @@ elif menu == "📈 IZVJEŠTAJI (Financije & Zalihe)":
             lista_racuna = df_racuni['racun_id'].tolist()
             odabrani_id_racuna = st.selectbox("Odaberi ID računa za prikaz stavki:", lista_racuna)
             
-            print(f"SELECT * FROM view_detalji_racuna WHERE racun_id = {odabrani_id_racuna}")
             query = "SELECT * FROM view_detalji_racuna WHERE racun_id = %s"
             stavke_df = run_query(query, [int(odabrani_id_racuna)])
             

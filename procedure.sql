@@ -296,11 +296,19 @@ BEGIN
         
         INSERT INTO stavka_racuna (racun_id, tip_stavke, opis, kolicina, cijena_jedinicna, iznos_ukupno) VALUES
         (p_racun_id, 'NOCENJE', CONCAT('Nocenje za rezervaciju ', p_rezervacija_id), v_broj_nocenja, v_cjena_po_nocenju, v_cjena_po_nocenju * v_broj_nocenja);
+
+        UPDATE racun
+        SET iznos_ukupno = iznos_ukupno + (v_cjena_po_nocenju * v_broj_nocenja)
+        WHERE id = p_racun_id;
     END IF;
 
     IF v_ima_bp_stavka = FALSE THEN
         INSERT INTO stavka_racuna (racun_id, tip_stavke, opis, kolicina, cijena_jedinicna, iznos_ukupno) VALUES
         (p_racun_id, 'BORAVISNA_PRISTOJBA', CONCAT('Boravisna pristojba za rezervaciju ', p_rezervacija_id), v_broj_nocenja, 2.00, v_broj_nocenja * 2.00);
+
+        UPDATE racun
+        SET iznos_ukupno = iznos_ukupno + (v_broj_nocenja * 2.00)
+        WHERE id = p_racun_id;
     END IF;
 END //
 DELIMITER ;
