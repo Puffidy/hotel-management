@@ -921,7 +921,7 @@ elif menu == "📊 STANJE (Sobe i Logovi)":
 # =============================================================================
 elif menu == "📈 IZVJEŠTAJI (Financije & Zalihe)":
     
-    tab_zalihe, tab_racuni, tab_pdv = st.tabs(["📦 Skladište (Zalihe)", "💶 Financije (Računi)", "🏛️ PDV (Obaveze)"])
+    tab_zalihe, tab_racuni, tab_pdv, tab_recenzije = st.tabs(["📦 Skladište (Zalihe)", "💶 Financije (Računi)", "🏛️ PDV (Obaveze)", "⭐ Recenzije"])
     
     # --- TAB 1: ZALIHE ---
     with tab_zalihe:
@@ -1071,20 +1071,20 @@ elif menu == "📈 IZVJEŠTAJI (Financije & Zalihe)":
             st.subheader("🔍 Detalji Računa")
             
             # Odabir računa za detalje
-            if not df_racuni.empty:
-                lista_racuna = df_racuni['racun_id'].tolist()
-                odabrani_id_racuna = st.selectbox("Odaberi ID računa za prikaz stavki:", lista_racuna)
-                
-                query = "SELECT * FROM view_detalji_racuna WHERE racun_id = %s"
-                stavke_df = run_query(query, [int(odabrani_id_racuna)])
-                
-                # Formatiranje i prikaz 
-                st.table(stavke_df.style.format({"cijena_jedinicna": "{:.2f} €", "iznos_ukupno": "{:.2f} €"}))
-                
-                total = stavke_df['iznos_ukupno'].sum()
-                st.metric(label="UKUPAN IZNOS", value=f"{total:.2f} €")
-            else:
-                st.info("Nema računa koji odgovaraju filterima.")
+            lista_racuna = df_racuni['racun_id'].tolist()
+            odabrani_id_racuna = st.selectbox("Odaberi ID računa za prikaz stavki:", lista_racuna)
+            
+            print(f"SELECT * FROM view_detalji_racuna WHERE racun_id = {odabrani_id_racuna}")
+            query = "SELECT * FROM view_detalji_racuna WHERE racun_id = %s"
+            stavke_df = run_query(query, [int(odabrani_id_racuna)])
+            
+            # Formatiranje i prikaz 
+            st.table(stavke_df.style.format({"cijena_jedinicna": "{:.2f} €", "iznos_ukupno": "{:.2f} €"}))
+            
+            total = stavke_df['iznos_ukupno'].sum()
+            st.metric(label="UKUPAN IZNOS", value=f"{total:.2f} €")
+
+            # TODO: when the selectbox has a new value, update the details
                 
         except Exception as e:
             st.error(f"Greška: Moguće da pogled 'pregled_svih_racuna' još nije kreiran u bazi.\nDetalji: {e}")
@@ -1111,3 +1111,61 @@ elif menu == "📈 IZVJEŠTAJI (Financije & Zalihe)":
                     
             except Exception as e:
                 st.error(f"Greška pri generiranju izvještaja: {e}")
+
+    with tab_recenzije:
+        st.header("📋 Menadžment Recenzija")
+        
+        # 1. Prikaz tablice
+        recenzije_df = run_query("SELECT * FROM pregled_recenzija_za_menadzera")
+        
+        if recenzije_df.empty:
+            st.info("Trenutno nema recenzija.")
+        else:
+            # Funkcija za bojanje statusa
+            def highlight_row(val):
+                # Pazi: SQL vraća 'Potrebna akcija' (case sensitive!), provjeri točan tekst u bazi
+                color = '#ffcccb' if val == 'Potrebna akcija' else '#d4edda'
+                return f'background-color: {color}'
+
+            st.dataframe(
+                recenzije_df.style.map(highlight_row, subset=['Status']),
+                use_container_width=True,
+                column_config={
+                    "rezervacija_id": st.column_config.NumberColumn("ID Rez.", format="%d"),
+                    "Ocjena": st.column_config.NumberColumn("Ocjena", format="%d ⭐")
+                }
+            )
+
+        st.divider()
+
+        # 2. Forma za odgovaranje
+        st.subheader("✍️ Odgovori gostu")
+
+        if not recenzije_df.empty:
+            # --- OVDJE JE BILA GREŠKA ---
+            # Stupac u bazi se zove 'Ime gosta', ne 'Gost'
+            opcije = {f"{row['rezervacija_id']} - {row['Ime gosta']} ({row['Status']})": row['rezervacija_id'] for i, row in recenzije_df.iterrows()}
+            
+            with st.form("forma_odgovor"):
+                odabir = st.selectbox("Odaberite recenziju:", list(opcije.keys()))
+                tekst_odgovora = st.text_area("Vaš odgovor:", height=100)
+                
+                submit = st.form_submit_button("Pošalji odgovor", type="primary")
+
+                if submit:
+                    if not tekst_odgovora:
+                        st.warning("Morate napisati tekst odgovora.")
+                    else:
+                        try:
+                            # Izvlačimo ID
+                            rez_id = int(opcije[odabir])
+                            print(rez_id, tekst_odgovora)
+                            
+                            run_action("odgovori_na_recenziju", [rez_id, tekst_odgovora], is_procedure=True)
+
+                            st.success("Odgovor uspješno zabilježen!")
+                            time.sleep(1)
+                            st.rerun()
+                        
+                        except Exception as e:
+                            st.error(f"Greška: {e}")

@@ -608,3 +608,24 @@ BEGIN
 END //
 
 DELIMITER ;
+
+
+DROP TRIGGER IF EXISTS kreiraj_racun_nakon_rezervacije;
+
+DELIMITER //
+CREATE TRIGGER kreiraj_racun_nakon_rezervacije
+AFTER INSERT ON rezervacija
+FOR EACH ROW
+BEGIN   
+    INSERT INTO racun
+        (rezervacija_id, tip_racuna, datum_izdavanja, iznos_ukupno, status_racuna, nacin_placanja)
+    VALUES (NEW.id, 'HOTEL', NOW(), 0.00, 'OTVOREN', 'GOTOVINA');
+END //
+DELIMITER ;
+
+INSERT INTO rezervacija
+(gost_nositelj_id, zaposlenik_id, soba_id, promocija_id, datum_rezervacije,
+ pocetak_datum, kraj_datum, vrijeme_check_in, vrijeme_check_out, broj_osoba, status, napomena)
+VALUES
+-- ZAVRSENA (imaju check-in/out)
+(1, 1,  1,  NULL,'2026-01-02 09:15:00','2027-01-10','2027-01-12',NULL,NULL,1,'POTVRDJENA','Poslovni boravak');

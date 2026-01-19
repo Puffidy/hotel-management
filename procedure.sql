@@ -210,17 +210,18 @@ DELIMITER ;
 
 CALL dohvati_slobodne_sobe(3, '2026-08-01', '2026-08-03');
 
-
+DROP PROCEDURE IF EXISTS generiranje_finalnog_racuna_za_rezervaciju;
+DROP PROCEDURE IF EXISTS dodaj_stavke_koje_fale_na_racun;
 -- Proc Alma - 
 DELIMITER //
 CREATE PROCEDURE generiranje_finalnog_racuna_za_rezervaciju(IN p_rezervacija_id INT, IN p_nacin_placanja VARCHAR(25))
 BEGIN
     DECLARE v_ukupni_iznos DECIMAL(10,2);
     DECLARE v_racun_id INT;
-
+    DECLARE v_ima_rezervaciju BOOLEAN;
 
     -- pronadi racun koji je vezan za rezervaciju i koji je otvoren
-    SELECT id INTO v_racun_id
+    SELECT id, rezervacija_id IS NOT NULL INTO v_racun_id, v_ima_rezervaciju
     FROM racun
     WHERE rezervacija_id = p_rezervacija_id
       AND status_racuna = 'OTVOREN'
@@ -229,6 +230,10 @@ BEGIN
     -- sigurnosna provjera: ako nema otvorenog racuna prekini proceduru
     IF v_racun_id IS NULL THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = "Ne postoji otvoreni račun za ovu rezervaciju.";
+    END IF;
+
+    IF v_ima_rezervaciju = TRUE THEN
+        CALL dodaj_stavke_koje_fale_na_racun(p_rezervacija_id, v_racun_id);
     END IF;
 
     -- pozivanje postojece funkcije za stavku
@@ -256,4 +261,46 @@ BEGIN
 
 END //
 
+DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE dodaj_stavke_koje_fale_na_racun(IN p_rezervacija_id INT, IN p_racun_id INT)
+BEGIN
+    DECLARE v_soba_id INT;
+    DECLARE v_datum_dolaska DATE;
+    DECLARE v_datum_odlaska DATE;
+    DECLARE v_broj_nocenja INT;
+    DECLARE v_cjena_po_nocenju DECIMAL(10,2);
+
+    DECLARE v_ima_nocenje_stavka BOOLEAN;
+    DECLARE v_ima_bp_stavka BOOLEAN;
+
+    SELECT soba_id, pocetak_datum, kraj_datum, DATEDIFF(kraj_datum, pocetak_datum)
+    INTO v_soba_id, v_datum_dolaska, v_datum_odlaska, v_broj_nocenja
+    FROM rezervacija
+    WHERE id = p_rezervacija_id
+    LIMIT 1;
+
+    SELECT COUNT(*) > 0 INTO v_ima_nocenje_stavka
+    FROM stavka_racuna
+    WHERE racun_id = p_racun_id
+        AND tip_stavke = 'NOCENJE';
+    
+    SELECT COUNT(*) > 0 INTO v_ima_bp_stavka
+    FROM stavka_racuna
+    WHERE racun_id = p_racun_id
+        AND tip_stavke = 'BORAVISNA_PRISTOJBA';
+
+    IF v_ima_nocenje_stavka = FALSE THEN
+        SET v_cjena_po_nocenju = izracunaj_cijenu_smjestaja(v_soba_id, v_datum_dolaska, v_datum_odlaska) / v_broj_nocenja;
+        
+        INSERT INTO stavka_racuna (racun_id, tip_stavke, opis, kolicina, cijena_jedinicna, iznos_ukupno) VALUES
+        (p_racun_id, 'NOCENJE', CONCAT('Nocenje za rezervaciju ', p_rezervacija_id), v_broj_nocenja, v_cjena_po_nocenju, v_cjena_po_nocenju * v_broj_nocenja);
+    END IF;
+
+    IF v_ima_bp_stavka = FALSE THEN
+        INSERT INTO stavka_racuna (racun_id, tip_stavke, opis, kolicina, cijena_jedinicna, iznos_ukupno) VALUES
+        (p_racun_id, 'BORAVISNA_PRISTOJBA', CONCAT('Boravisna pristojba za rezervaciju ', p_rezervacija_id), v_broj_nocenja, 2.00, v_broj_nocenja * 2.00);
+    END IF;
+END //
 DELIMITER ;
