@@ -6,7 +6,7 @@ import mysql.connector
 def get_connection():
     return mysql.connector.connect(
         host="localhost",
-        user="root",           # <--- PROVJERI SVOJE KORISNIČKO IME
-        password="IWasThere223",       # <--- PROVJERI SVOJU LOZINKU
+        user="root",           # <--- Your username goes here
+        password="root",       # <--- Your password goes here
         database="novi_projekt"
     )
