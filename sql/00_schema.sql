@@ -51,7 +51,7 @@ CREATE TABLE odjel (
     lokalni INT
 );
 
--- 4.a KATEGORIJE ZAPOSLENIKA 
+-- 4.a KATEGORIJE ZAPOSLENIKA
 CREATE TABLE pozicija_zaposlenika (
     id INT AUTO_INCREMENT PRIMARY KEY,
     naziv VARCHAR(50) NOT NULL UNIQUE,
@@ -68,8 +68,8 @@ CREATE TABLE zaposlenik (
     datum_zaposlenja TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     tel_kontakt VARCHAR(20),
     email VARCHAR(80),
-    korisnicko_ime VARCHAR(30) UNIQUE, 
-    lozinka_hash VARCHAR(255), 
+    korisnicko_ime VARCHAR(30) UNIQUE,
+    lozinka_hash VARCHAR(255),
     CONSTRAINT fk_zaposlenik_odjel FOREIGN KEY (odjel_id) REFERENCES odjel(id),
 	CONSTRAINT fk_zaposlenik_pozicija FOREIGN KEY (pozicija_id) REFERENCES pozicija_zaposlenika(id)
 );
@@ -88,14 +88,14 @@ CREATE TABLE gost (
     status_id INT NOT NULL DEFAULT 1,
     ukupna_potrosnja_cache DECIMAL(12,2) NOT NULL DEFAULT 0.00,
 	vip_status BOOLEAN DEFAULT 0,
-    
+
     CONSTRAINT fk_gost_vrsta_dok FOREIGN KEY (vrsta_dokumenta_id) REFERENCES vrsta_dokumenta(id),
     CONSTRAINT fk_gost_drzavljanstvo FOREIGN KEY (drzavljanstvo_id) REFERENCES drzava(id),
     CONSTRAINT fk_gost_preb_grad FOREIGN KEY (prebivaliste_grad_id) REFERENCES grad(id),
     CONSTRAINT fk_gost_status FOREIGN KEY (status_id) REFERENCES status_gosta(id),
 
     UNIQUE (vrsta_dokumenta_id, broj_dokumenta),
-    
+
     INDEX idx_gost_potrosnja (ukupna_potrosnja_cache DESC)
 );
 
@@ -149,7 +149,7 @@ CREATE TABLE kategorija_usluge (
     naziv VARCHAR(50) NOT NULL
 );
 
--- 11. USLUGA 
+-- 11. USLUGA
 CREATE TABLE usluga (
     id INT AUTO_INCREMENT PRIMARY KEY,
     kategorija_id INT NULL, -- Link na kategoriju
@@ -165,11 +165,11 @@ CREATE TABLE artikl (
     id INT AUTO_INCREMENT PRIMARY KEY,
     naziv VARCHAR(50) NOT NULL,
     stanje_zaliha DECIMAL(10,2) DEFAULT 0,
-    jedinica_mjere VARCHAR(10), 
+    jedinica_mjere VARCHAR(10),
     nabavna_cijena DECIMAL(10,2)
 );
 
--- 13. NORMATIV 
+-- 13. NORMATIV
 CREATE TABLE normativ (
     usluga_id INT NOT NULL,
     artikl_id INT NOT NULL,
@@ -179,7 +179,7 @@ CREATE TABLE normativ (
     CONSTRAINT fk_norm_artikl FOREIGN KEY (artikl_id) REFERENCES artikl(id)
 );
 
--- 14. RESTORAN_STOL 
+-- 14. RESTORAN_STOL
 CREATE TABLE restoran_stol (
     id INT AUTO_INCREMENT PRIMARY KEY,
     broj_stola INT NOT NULL UNIQUE,
@@ -191,10 +191,10 @@ CREATE TABLE restoran_stol (
 -- 5. REZERVACIJE I MARKETING
 */
 
--- 15. PROMOCIJA 
+-- 15. PROMOCIJA
 CREATE TABLE promocija (
     id INT  PRIMARY KEY,
-    naziv VARCHAR(50) NOT NULL, 
+    naziv VARCHAR(50) NOT NULL,
     kod_kupona VARCHAR(20) UNIQUE,
     popust_postotak DECIMAL(5,2),
     datum_pocetka DATE,
@@ -202,25 +202,25 @@ CREATE TABLE promocija (
     aktivna BOOLEAN DEFAULT 1
 );
 
--- 16. REZERVACIJA 
+-- 16. REZERVACIJA
 CREATE TABLE rezervacija (
     id INT AUTO_INCREMENT PRIMARY KEY,
     gost_nositelj_id INT NOT NULL,
     zaposlenik_id INT NOT NULL,
     soba_id INT NOT NULL,
-    promocija_id INT NULL, 
-    
+    promocija_id INT NULL,
+
     datum_rezervacije TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    pocetak_datum DATE NOT NULL, 
+    pocetak_datum DATE NOT NULL,
     kraj_datum DATE NOT NULL,
-    
-    vrijeme_check_in DATETIME NULL,  
+
+    vrijeme_check_in DATETIME NULL,
     vrijeme_check_out DATETIME NULL,
-    
+
     broj_osoba INT NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'POTVRDJENA',
     napomena TEXT,
-    
+
     CONSTRAINT chk_rezervacija_status CHECK (status IN ('POTVRDJENA','OTKAZANA','U_TIJEKU','ZAVRSENA')),
     CONSTRAINT fk_rez_gost FOREIGN KEY (gost_nositelj_id) REFERENCES gost(id),
     CONSTRAINT fk_rez_zaposlenik FOREIGN KEY (zaposlenik_id) REFERENCES zaposlenik(id),
@@ -228,15 +228,15 @@ CREATE TABLE rezervacija (
     CONSTRAINT fk_rez_promo FOREIGN KEY (promocija_id) REFERENCES promocija(id)
 );
 
--- 17. RESTORAN_NARUDZBA 
+-- 17. RESTORAN_NARUDZBA
 CREATE TABLE restoran_narudzba (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    zaposlenik_id INT NOT NULL, 
+    zaposlenik_id INT NOT NULL,
     restoran_stol_id INT NOT NULL,
     datum_otvaranja TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     datum_zatvaranja TIMESTAMP NULL,
     status VARCHAR(20) DEFAULT 'OTVORENA',
-    
+
     CONSTRAINT fk_rest_konobar FOREIGN KEY (zaposlenik_id) REFERENCES zaposlenik(id),
     CONSTRAINT fk_rest_stol FOREIGN KEY (restoran_stol_id) REFERENCES restoran_stol(id)
 
@@ -249,8 +249,8 @@ CREATE TABLE restoran_stavka (
     usluga_id INT NOT NULL,
     kolicina INT NOT NULL DEFAULT 1,
     cijena_u_trenutku NUMERIC(10,2) NOT NULL,
-    status_pripreme VARCHAR(20) DEFAULT 'NARUCENO', 
-    
+    status_pripreme VARCHAR(20) DEFAULT 'NARUCENO',
+
     CONSTRAINT fk_rest_stavka_nar FOREIGN KEY (narudzba_id) REFERENCES restoran_narudzba(id),
     CONSTRAINT fk_rest_stavka_usl FOREIGN KEY (usluga_id) REFERENCES usluga(id),
 
@@ -258,7 +258,7 @@ CREATE TABLE restoran_stavka (
     CONSTRAINT chk_rest_cijena CHECK (cijena_u_trenutku >= 0)
 );
 
--- 19. REZERVACIJA_GOST 
+-- 19. REZERVACIJA_GOST
 CREATE TABLE rezervacija_gost (
     id INT AUTO_INCREMENT PRIMARY KEY,
     rezervacija_id INT NOT NULL,
@@ -269,7 +269,7 @@ CREATE TABLE rezervacija_gost (
     UNIQUE (rezervacija_id, gost_id)
 );
 
--- 20. LOG_REZERVACIJE 
+-- 20. LOG_REZERVACIJE
 CREATE TABLE log_rezervacije (
     id INT AUTO_INCREMENT PRIMARY KEY,
     rezervacija_id INT NOT NULL,
@@ -306,7 +306,7 @@ CREATE TABLE stavka_racuna (
     id INT AUTO_INCREMENT PRIMARY KEY,
     racun_id INT NOT NULL,
 
-    usluga_id INT NULL, 
+    usluga_id INT NULL,
     restoran_stavka_id INT NULL,
 
     tip_stavke VARCHAR(30) NOT NULL,
@@ -332,7 +332,7 @@ CREATE TABLE stavka_racuna (
 -- 23. CISCENJE_DNEVNI_NALOG
 CREATE TABLE ciscenje_dnevni_nalog (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    zaposlenik_id INT NOT NULL, 
+    zaposlenik_id INT NOT NULL,
     rezervacija_id INT NOT NULL,
     datum_naloga TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     prijavljena_steta BOOLEAN NOT NULL DEFAULT 0,
@@ -355,7 +355,7 @@ CREATE TABLE servis_dnevni_nalog (
     CONSTRAINT fk_servis_soba FOREIGN KEY (soba_id) REFERENCES soba(id)
 );
 
--- 25. RECENZIJA 
+-- 25. RECENZIJA
 CREATE TABLE recenzija (
     id INT AUTO_INCREMENT PRIMARY KEY,
     rezervacija_id INT NOT NULL,
@@ -366,3 +366,8 @@ CREATE TABLE recenzija (
 );
 
 
+-- Schema modifications (from proc_view_za_recenzije.sql)
+ALTER TABLE recenzija ADD COLUMN odgovor_hotela TEXT DEFAULT NULL;
+
+-- Schema modification needed for delete trigger on log_rezervacije (from okidaci.sql)
+ALTER TABLE log_rezervacije DROP FOREIGN KEY fk_rezervacija_id;  -- PITAJ EUGENA

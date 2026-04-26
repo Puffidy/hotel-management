@@ -1,3 +1,5 @@
+USE novi_projekt;
+
 /***********POGLED ZA TRENUTNO STANJE SOBA*************/
 CREATE OR REPLACE VIEW trenutno_stanje_soba AS
 SELECT
@@ -18,7 +20,6 @@ SELECT
         ELSE s.status      /*Inače koristi osnovni status iz tablice soba*/
     END AS trenutno_stanje
 FROM soba s;
-SELECT * FROM trenutno_stanje_soba;
 
 /************POGLED ZA RAČUN PO REZERVACIJI***************/
 
@@ -32,7 +33,7 @@ SELECT
     s.broj AS broj_sobe,
 	/*Broji koliko je računa izdano za ovu rezervaciju*/
     COUNT(DISTINCT ra.id) AS broj_racuna,
-    /*Ukupni iznos svih stavki na svim računima*/ 
+    /*Ukupni iznos svih stavki na svim računima*/
     COALESCE(SUM(sr.iznos_ukupno), 0) AS ukupni_iznos /*osigurava da rezultat nije NULL*/
 FROM rezervacija r
 JOIN gost g ON g.id = r.gost_nositelj_id
@@ -45,7 +46,7 @@ GROUP BY
     r.status,
     g.id,
     s.broj;
-SELECT * FROM racun_po_rezervaciji;
+
 /*****************POGLED ZA PROVJERE ZALIHA****************/
 CREATE OR REPLACE VIEW low_stock_alert AS
 SELECT
@@ -62,7 +63,6 @@ SELECT
 FROM artikl a
 	/*Samo roba koja je kritična ili je nema*/
 WHERE a.stanje_zaliha <= 5;
-SELECT * FROM low_stock_alert;
 
 /******************Najbolji gosti po potrosnji ************************/
 CREATE OR REPLACE VIEW najbolji_gosti_potrosnja AS
@@ -83,7 +83,6 @@ JOIN stavka_racuna sr ON sr.racun_id = ra.id
 WHERE r.status = 'ZAVRSENA'
 /*Grupiranje po gostu*/
 GROUP BY g.id, g.vip_status;
-SELECT * FROM najbolji_gosti_potrosnja LIMIT 10;
 
 /***********************EVIDENCIJA CIJENA SOBA*************************/
 CREATE OR REPLACE VIEW evidencija_cijena_soba AS
@@ -98,7 +97,6 @@ SELECT
 FROM cjenik_soba cs
 JOIN tip_sobe ts ON ts.id = cs.tip_sobe_id
 ORDER BY ts.naziv, cs.datum_od DESC;
-SELECT * FROM evidencija_cijena_soba;
 
 /******************NEPLAĆENI RAČUNI***********************/
 CREATE OR REPLACE VIEW neplaceni_racuni AS
@@ -109,16 +107,15 @@ SELECT
     r.datum_izdavanja,
     r.iznos_ukupno
 FROM racun r
-WHERE r.status_racuna = 'OTVOREN' 
+WHERE r.status_racuna = 'OTVOREN'
 ORDER BY r.datum_izdavanja DESC;
-SELECT *FROM neplaceni_racuni;
 
 
 -- -----------------------------------------
 -- 1. pregled svih racuna
 
 CREATE OR REPLACE VIEW pregled_svih_racuna AS
-SELECT 
+SELECT
     r.id AS racun_id,
     r.tip_racuna,
     r.status_racuna,
@@ -126,7 +123,7 @@ SELECT
     r.nacin_placanja,
     r.datum_izdavanja,
     r.rezervacija_id,
-    
+
     COALESCE(CONCAT(g.ime, ' ', g.prezime), 'Vanjski Gost') AS gost_nositelj
 FROM racun r
 LEFT JOIN rezervacija rez ON r.rezervacija_id = rez.id
@@ -136,13 +133,13 @@ LEFT JOIN gost g ON rez.gost_nositelj_id = g.id;
 -- 2. pregled zaliha skladista
 
 CREATE OR REPLACE VIEW pregled_zaliha_skladiste AS
-SELECT 
+SELECT
     a.id AS artikl_id,
     a.naziv,
     a.stanje_zaliha,
     a.jedinica_mjere,
     a.nabavna_cijena,
-    
+
     (a.stanje_zaliha * a.nabavna_cijena) AS ukupna_vrijednost
 FROM artikl a;
 
@@ -150,7 +147,7 @@ FROM artikl a;
 -- 3. pregled svih rezrvacija
 
 CREATE OR REPLACE VIEW pregled_svih_rezervacija AS
-SELECT 
+SELECT
     r.id AS rezervacija_id,
     CONCAT(g.ime, ' ', g.prezime) AS gost,
     s.broj AS soba,
@@ -169,14 +166,14 @@ ORDER BY r.pocetak_datum DESC;
 
 CREATE OR REPLACE VIEW view_meni_restoran AS
 SELECT id, naziv, cijena_trenutna, kategorija_id
-FROM usluga 
+FROM usluga
 WHERE kategorija_id IN (1, 2); -- 1=Hrana, 2=Piće
 
 -- ------------------------------------------------
 -- 5. pogled narudzbi kuhinja
 
 CREATE OR REPLACE VIEW view_kuhinja_display AS
-SELECT 
+SELECT
     rs.id AS stavka_id,
     rs.narudzba_id,
     u.naziv AS naziv_jela,
@@ -191,10 +188,10 @@ WHERE rs.status_pripreme IN ('NARUCENO', 'PRIPREMA');
 -- 6. pogled otvorene narudzbe
 
 CREATE OR REPLACE VIEW view_otvorene_narudzbe_total AS
-SELECT 
+SELECT
     rn.id AS narudzba_id,
     rs.broj_stola,
-    rs.lokacija,   
+    rs.lokacija,
     COALESCE(SUM(rst.kolicina * rst.cijena_u_trenutku), 0) AS total_iznos
 FROM restoran_narudzba rn
 JOIN restoran_stol rs ON rn.restoran_stol_id = rs.id
@@ -215,11 +212,11 @@ WHERE s.status = 'CISCENJE';
 -- 8. pogled aktivnih rezervacija
 
 CREATE OR REPLACE VIEW view_aktivne_rezervacije AS
-SELECT 
-    r.id AS rezervacija_id, 
-    s.broj AS broj_sobe, 
-    g.ime, 
-    g.prezime 
+SELECT
+    r.id AS rezervacija_id,
+    s.broj AS broj_sobe,
+    g.ime,
+    g.prezime
 FROM rezervacija r
 JOIN soba s ON r.soba_id = s.id
 JOIN gost g ON r.gost_nositelj_id = g.id
@@ -229,15 +226,15 @@ WHERE r.status = 'U_TIJEKU';
 -- 9. pogled dodatne usluge
 
 CREATE OR REPLACE VIEW view_dodatne_usluge AS
-SELECT id, naziv, cijena_trenutna 
-FROM usluga 
+SELECT id, naziv, cijena_trenutna
+FROM usluga
 WHERE kategorija_id IN (3, 4); -- 3=Wellness, 4=Ostalo
 
 -- ----------------------------------------------------
 -- 10. aktivni kvarovi
 
 CREATE OR REPLACE VIEW view_aktivni_kvarovi AS
-SELECT 
+SELECT
     n.id AS nalog_id,
     CONCAT(z.ime, ' ', z.prezime) AS serviser,
     s.broj AS broj_sobe,
@@ -254,9 +251,9 @@ WHERE n.rijeseno = 0;
 -- 11. pogled osoblja odrzavanja
 
 CREATE OR REPLACE VIEW view_osoblje_odrzavanja AS
-SELECT 
-    z.id, 
-    z.ime, 
+SELECT
+    z.id,
+    z.ime,
     z.prezime,
     CONCAT(z.ime, ' ', z.prezime) AS puno_ime
 FROM zaposlenik z
@@ -267,11 +264,11 @@ WHERE o.naziv = 'Odrzavanje';
 -- 13. pogled status soba boje
 
 CREATE OR REPLACE VIEW view_status_soba_boje AS
-SELECT 
+SELECT
     s.id,
     s.broj,
     ts.trenutno_stanje AS stanje,
-    CASE 
+    CASE
         WHEN ts.trenutno_stanje = 'ZAUZETA' THEN '#ffcdd2'       -- Crvena
         WHEN ts.trenutno_stanje = 'SLOBODNA' THEN '#c8e6c9'      -- Zelena
         WHEN ts.trenutno_stanje = 'CISCENJE' THEN '#fff9c4'      -- Žuta
@@ -286,10 +283,10 @@ JOIN trenutno_stanje_soba ts ON s.id = ts.soba_id;
 -- 14. pogled soba dropdown
 
 CREATE OR REPLACE VIEW view_sve_sobe_dropdown AS
-SELECT 
-    s.id, 
-    s.broj, 
-    t.naziv AS tip_sobe, 
+SELECT
+    s.id,
+    s.broj,
+    t.naziv AS tip_sobe,
     s.status
 FROM soba s
 JOIN tip_sobe t ON s.tip_sobe_id = t.id
@@ -300,12 +297,12 @@ ORDER BY s.broj;
 -- 16. pogled stavke narudzbe
 
 CREATE OR REPLACE VIEW view_stavke_narudzbe AS
-SELECT 
-    rs.narudzba_id,          
+SELECT
+    rs.narudzba_id,
     u.naziv AS naziv_artikla,
     rs.kolicina,
     rs.cijena_u_trenutku AS cijena_jedinicna,
-    (rs.kolicina * rs.cijena_u_trenutku) AS ukupno_stavka, 
+    (rs.kolicina * rs.cijena_u_trenutku) AS ukupno_stavka,
     rs.status_pripreme
 FROM restoran_stavka rs
 JOIN usluga u ON rs.usluga_id = u.id;
@@ -314,7 +311,7 @@ JOIN usluga u ON rs.usluga_id = u.id;
 -- 17. pogled detalji racuna
 
 CREATE OR REPLACE VIEW view_detalji_racuna AS
-SELECT 
+SELECT
     racun_id,
     tip_stavke,
     opis,
@@ -327,7 +324,7 @@ FROM stavka_racuna;
 -- 18. pogled recepti
 
 CREATE OR REPLACE VIEW view_recepture_detaljno AS
-SELECT 
+SELECT
     u.id AS jelo_id,
     u.naziv AS naziv_jela,
     a.naziv AS namirnica,
@@ -345,10 +342,10 @@ ORDER BY u.naziv, a.naziv;
 -- 19. pogled zaposlenici recepcija
 
 CREATE OR REPLACE VIEW view_zaposlenici_recepcija AS
-SELECT 
-    id, 
-    ime, 
-    prezime, 
+SELECT
+    id,
+    ime,
+    prezime,
     CONCAT(ime, ' ', prezime) AS puno_ime,
     korisnicko_ime
 FROM zaposlenik
@@ -358,10 +355,10 @@ WHERE odjel_id = 1; -- 1 = Recepcija
 -- 20. pogled zaposlenici konobari
 
 CREATE OR REPLACE VIEW view_zaposlenici_konobari AS
-SELECT 
-    id, 
-    ime, 
-    prezime, 
+SELECT
+    id,
+    ime,
+    prezime,
     CONCAT(ime, ' ', prezime) AS puno_ime
 FROM zaposlenik
 WHERE odjel_id = 5; -- 5 = Restoran
@@ -370,10 +367,10 @@ WHERE odjel_id = 5; -- 5 = Restoran
 -- 21. pogled zaposlenici domacinstvo
 
 CREATE OR REPLACE VIEW view_zaposlenici_domacinstvo AS
-SELECT 
-    id, 
-    ime, 
-    prezime, 
+SELECT
+    id,
+    ime,
+    prezime,
     CONCAT(ime, ' ', prezime) AS puno_ime
 FROM zaposlenik
 WHERE odjel_id = 2; -- 2 = Domaćinstvo
@@ -382,10 +379,28 @@ WHERE odjel_id = 2; -- 2 = Domaćinstvo
 -- 22. pogled zaposlenici tehničari
 
 CREATE OR REPLACE VIEW view_zaposlenici_odrzavanje AS
-SELECT 
-    id, 
-    ime, 
-    prezime, 
+SELECT
+    id,
+    ime,
+    prezime,
     CONCAT(ime, ' ', prezime) AS puno_ime
 FROM zaposlenik
 WHERE odjel_id = 3;
+
+
+-- view koji prikazuje recenzije zaedno sa odgovorima hotela
+CREATE OR REPLACE VIEW pregled_recenzija_za_menadzera AS
+SELECT
+    recenzija.rezervacija_id,
+    CONCAT(gost.ime, ' ', gost.prezime) AS 'Ime gosta',
+    recenzija.ocjena AS 'Ocjena',
+    recenzija.komentar AS 'Komentar gosta',
+    COALESCE(recenzija.odgovor_hotela, 'Nema odgovora') AS 'Odgovor hotela',
+    CASE
+        WHEN recenzija.odgovor_hotela IS NULL THEN 'Potrebna akcija'
+        ELSE 'Riješeno'
+    END AS 'Status'
+FROM recenzija
+JOIN rezervacija ON recenzija.rezervacija_id = rezervacija.id
+JOIN gost ON rezervacija.gost_nositelj_id = gost.id
+ORDER BY recenzija.odgovor_hotela IS NOT NULL, recenzija.ocjena ASC;
