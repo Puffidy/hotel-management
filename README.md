@@ -19,13 +19,13 @@ A hotel management system built with Python (Streamlit) and MySQL.
 
 ## Screenshots
 
-![Dashboard Overview]()
+![Dashboard Overview](docs/screenshots/dashboard.png)
 
-![Reservation Module]()
+![Reservation Module](docs/screenshots/reservations.png)
 
-![Restaurant Module]()
+![Restaurant Module](docs/screenshots/restaurant.png)
 
-![Room Status]()
+![Room Status](docs/screenshots/room_status.png)
 
 ## Installation and Setup
 
