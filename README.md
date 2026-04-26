@@ -56,11 +56,11 @@ def get_connection():
 Run the application with the command:
 
 ```bash
-streamlit run main.py
+streamlit run app/main.py
 ```
 
 ## Database Diagrams
 
-![ER Diagram](ER_za_novi_projekt.png)
+![ER Diagram](docs/ER_za_novi_projekt.png)
 
-![EERD Diagram](EERD_za_novi_projekt67.png)
+![EERD Diagram](docs/EERD_za_novi_projekt67.png)
