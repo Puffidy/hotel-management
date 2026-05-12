@@ -1,3 +1,5 @@
+*The fork is to move the project onto my personal GitHub account.*
+
 # Hotel Management System
 
 A hotel management system built with Python (Streamlit) and MySQL.
